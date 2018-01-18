@@ -7,6 +7,7 @@ import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import com.epam.test_generator.transformers.UserTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,12 @@ public class UserService {
     private static final int MAX_ATTEMPTS = 5;
 
     private final static String DEFAULT_ROLE = "GUEST";
+
+    @Autowired
+    EmailService emailService;
+
+    @Autowired
+    public SimpleMailMessage template;
 
     @Autowired
     private RoleService roleService;
@@ -73,6 +80,9 @@ public class UserService {
                     encoder.encode(loginUserDTO.getPassword()),
                     roleService.getRoleByName(DEFAULT_ROLE));
             userDAO.save(user);
+
+            String text = template.getText();
+            emailService.sendSimpleMessage(loginUserDTO.getEmail(), "Email verification", text);
         }
     }
 
@@ -83,6 +93,7 @@ public class UserService {
     /**
      * Method checks and increments the number of login attempts and locks the user
      * in case of exceeding the maximum number of attempts
+     *
      * @param userId id of the identified user
      * @return number of incorrect attempts
      */
@@ -105,6 +116,7 @@ public class UserService {
 
     /**
      * Cancels the count of incorrect login attempts for user and unlocked them
+     *
      * @param userId id of the identified user
      */
     public void invalidateAttempts(Long userId) {

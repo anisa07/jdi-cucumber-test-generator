@@ -8,20 +8,20 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 @Service
 @PropertySource("classpath:application.properties")
 @Transactional(noRollbackFor=UnauthorizedException.class)
 public class TokenService {
-
 
     @Resource
     private Environment environment;
