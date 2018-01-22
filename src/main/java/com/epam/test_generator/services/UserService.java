@@ -23,10 +23,11 @@ public class UserService {
     private final static String DEFAULT_ROLE = "GUEST";
 
     @Autowired
+    private
     EmailService emailService;
 
     @Autowired
-    public SimpleMailMessage template;
+    private SimpleMailMessage template;
 
     @Autowired
     private RoleService roleService;

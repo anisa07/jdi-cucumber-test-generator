@@ -44,10 +44,10 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public SimpleMailMessage templateSimpleMessage() {
+    public SimpleMailMessage templateSimpleMessage(String name) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setText(
-                "This is the test email template for your email:\n%s\n");
+        message.setText(String.format(
+                "This is the test email template for your email:\n%s\n", name));
         return message;
     }
 
