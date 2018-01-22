@@ -7,7 +7,6 @@ import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import com.epam.test_generator.transformers.UserTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +25,6 @@ public class UserService {
     private
     EmailService emailService;
 
-    @Autowired
-    private SimpleMailMessage template;
 
     @Autowired
     private RoleService roleService;
@@ -82,8 +79,7 @@ public class UserService {
                     roleService.getRoleByName(DEFAULT_ROLE));
             userDAO.save(user);
 
-            String text = template.getText();
-            emailService.sendSimpleMessage(loginUserDTO.getEmail(), "Email verification", text);
+            emailService.sendSimpleMessage(loginUserDTO.getEmail(), "Email verification", "some text");
         }
     }
 
@@ -129,4 +125,9 @@ public class UserService {
         }
     }
 
+    public void updatePassword(String password, String email) {
+        User byEmail = userDAO.findByEmail(email);
+        byEmail.setPassword(password);
+        userDAO.save(byEmail);
+    }
 }

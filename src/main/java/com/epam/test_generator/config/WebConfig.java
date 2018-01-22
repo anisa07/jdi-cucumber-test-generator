@@ -5,7 +5,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.servlet.ViewResolver;
@@ -43,13 +42,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         return mailSender;
     }
 
-    @Bean
-    public SimpleMailMessage templateSimpleMessage(String name) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setText(String.format(
-                "This is the test email template for your email:\n%s\n", name));
-        return message;
-    }
+
 
 
     @Override
