@@ -100,9 +100,7 @@ public class UserService {
             int attempts = user.getAttempts();
             if (MAX_ATTEMPTS <= ++attempts) {
                 user.setLocked(true);
-                emailService.sendResetPasswordMessage(user);
             }
-
             user.setAttempts(attempts);
             userDAO.save(user);
             return attempts;

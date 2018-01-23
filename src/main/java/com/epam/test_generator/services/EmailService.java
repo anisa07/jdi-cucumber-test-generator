@@ -26,14 +26,12 @@ public class EmailService {
     @Resource
     private Environment environment;
 
-    private void sendSimpleMessage(String to, String subject, String text) {
+    public void sendSimpleMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
         emailSender.send(message);
-
-
     }
 
     public void sendRegistrationMessage(LoginUserDTO loginUserDTO) {
@@ -44,10 +42,10 @@ public class EmailService {
         sendSimpleMessage(loginUserDTO.getEmail(), subject, text);
     }
 
-    public void sendResetPasswordMessage(User user) {
+    public void sendResetPasswordMessage(User user, String resetUrl) {
         String subject = environment.getProperty("subject.password.message");
         String text = environment.getProperty("reset.password.message");
-        text = String.format(text, "Maksim", "Stelmakh", "https://www.epam.com/",
+        text = String.format(text, "Maksim", "Stelmakh", resetUrl,
             javaMailSender.getUsername());
         sendSimpleMessage(user.getEmail(), subject, text);
     }
