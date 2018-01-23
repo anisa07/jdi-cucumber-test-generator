@@ -19,9 +19,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private MailSender mailSender;
-
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
     public ResponseEntity registerUserAccount(@RequestBody @Valid LoginUserDTO userDTO) {
 

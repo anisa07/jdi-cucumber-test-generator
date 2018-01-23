@@ -17,14 +17,13 @@ import java.util.List;
 @Transactional
 @Service
 public class UserService {
+
     private static final int MAX_ATTEMPTS = 5;
 
     private final static String DEFAULT_ROLE = "GUEST";
 
     @Autowired
-    private
-    EmailService emailService;
-
+    private EmailService emailService;
 
     @Autowired
     private RoleService roleService;
@@ -55,9 +54,9 @@ public class UserService {
         if (admin.isEmpty()) {
 
             final User user = new User(
-                    "admin@mail.com",
-                    encoder.encode("admin"),
-                    roleService.getRoleByName("ADMIN"));
+                "admin@mail.com",
+                encoder.encode("admin"),
+                roleService.getRoleByName("ADMIN"));
 
             userDAO.save(user);
         }
@@ -70,16 +69,16 @@ public class UserService {
     public void createUser(LoginUserDTO loginUserDTO) {
         if (this.getUserByEmail(loginUserDTO.getEmail()) != null) {
             throw new UnauthorizedException(
-                    "user with email:" + loginUserDTO.getEmail() + " already exist!");
+                "user with email:" + loginUserDTO.getEmail() + " already exist!");
         } else {
 
             final User user = new User(
-                    loginUserDTO.getEmail(),
-                    encoder.encode(loginUserDTO.getPassword()),
-                    roleService.getRoleByName(DEFAULT_ROLE));
+                loginUserDTO.getEmail(),
+                encoder.encode(loginUserDTO.getPassword()),
+                roleService.getRoleByName(DEFAULT_ROLE));
             userDAO.save(user);
 
-            emailService.sendSimpleMessage(loginUserDTO.getEmail(), "Email verification", "some text");
+            emailService.sendRegistrationMessage(loginUserDTO);
         }
     }
 
@@ -88,8 +87,8 @@ public class UserService {
     }
 
     /**
-     * Method checks and increments the number of login attempts and locks the user
-     * in case of exceeding the maximum number of attempts
+     * Method checks and increments the number of login attempts and locks the user in case of
+     * exceeding the maximum number of attempts
      *
      * @param userId id of the identified user
      * @return number of incorrect attempts
@@ -101,6 +100,7 @@ public class UserService {
             int attempts = user.getAttempts();
             if (MAX_ATTEMPTS <= ++attempts) {
                 user.setLocked(true);
+                emailService.sendResetPasswordMessage(user);
             }
 
             user.setAttempts(attempts);

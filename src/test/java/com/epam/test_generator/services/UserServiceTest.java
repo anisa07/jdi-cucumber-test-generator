@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class UserServiceTest {
 
     @Mock
     private PasswordEncoder encoder;
+
     @Mock
     private UserDAO userDAO;
 
@@ -52,6 +54,9 @@ public class UserServiceTest {
 
     @Mock
     private LoginUserDTO loginUserDTO;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private UserService sut;
@@ -109,10 +114,10 @@ public class UserServiceTest {
     }
 
     @Test
-    @Ignore
     public void createUser() throws Exception {
         sut.createUser(loginUserDTO);
         verify(userDAO).save(any(User.class));
+        verify(emailService).sendRegistrationMessage(loginUserDTO);
     }
 
     @Test(expected = UnauthorizedException.class)
@@ -151,10 +156,10 @@ public class UserServiceTest {
         sut.updateFailureAttempts(1L);
         actualAttempts = sut.updateFailureAttempts(1L);
 
-        verify(userDAO,times(3)).save(any(User.class));
+        verify(userDAO, times(3)).save(any(User.class));
 
-        assertEquals(expectedAttempts,actualAttempts);
-        assertEquals(expectedAttempts, (long)user.getAttempts());
+        assertEquals(expectedAttempts, actualAttempts);
+        assertEquals(expectedAttempts, (long) user.getAttempts());
         assertFalse(user.isLocked());
     }
 
@@ -170,9 +175,11 @@ public class UserServiceTest {
         when(userDAO.findById(anyLong())).thenReturn(user);
 
         actualAttempts = sut.updateFailureAttempts(1L);
-        verify(userDAO,times(1)).save(any(User.class));
-        assertEquals(expectedAttempts,actualAttempts);
+        verify(userDAO, times(1)).save(any(User.class));
+        assertEquals(expectedAttempts, actualAttempts);
         assertTrue(user.isLocked());
+
+        verify(emailService).sendResetPasswordMessage(user);
     }
 
     @Test
@@ -186,20 +193,22 @@ public class UserServiceTest {
         when(userDAO.findById(anyLong())).thenReturn(user);
 
         sut.invalidateAttempts(1L);
-        assertEquals(expectedAttempts, (long)user.getAttempts());
+        assertEquals(expectedAttempts, (long) user.getAttempts());
         assertFalse(user.isLocked());
     }
+
     @Test
-    public void createAdmin_ok() throws Exception{
+    public void createAdmin_ok() throws Exception {
         sut.createAdminIfDoesNotExist();
         verify(userDAO).save(any(User.class));
 
     }
 
     @Test
-    public void createAdmin_nok() throws Exception{
-        when(userDAO.findByRole(roleService.getRoleByName("ADMIN"))).thenReturn(Collections.singletonList(new User()));
+    public void createAdmin_nok() throws Exception {
+        when(userDAO.findByRole(roleService.getRoleByName("ADMIN")))
+            .thenReturn(Collections.singletonList(new User()));
         sut.createAdminIfDoesNotExist();
-        verify(userDAO,times(0)).save(any(User.class));
+        verify(userDAO, times(0)).save(any(User.class));
     }
 }
