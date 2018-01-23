@@ -178,8 +178,6 @@ public class UserServiceTest {
         verify(userDAO, times(1)).save(any(User.class));
         assertEquals(expectedAttempts, actualAttempts);
         assertTrue(user.isLocked());
-
-        verify(emailService).sendResetPasswordMessage(user);
     }
 
     @Test
