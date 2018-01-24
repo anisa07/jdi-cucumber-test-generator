@@ -6,7 +6,6 @@ import com.epam.test_generator.services.EmailService;
 import com.epam.test_generator.services.PasswordService;
 import com.epam.test_generator.services.TokenService;
 import com.epam.test_generator.services.UserService;
-import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import org.hibernate.validator.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,12 +36,9 @@ public class PasswordForgotController {
     public ResponseEntity passwordForgot(@RequestParam @Email String email,
                                          HttpServletRequest request) throws Exception {
         User user = userService.getUserByEmail(email);
-        if (user == null) {
-            throw new UnauthorizedException(
-                "User with email: " + email + " not found.");
-        }
-        PasswordResetToken token = tokenService.resetToken(user);
-        String resetUrl = passwordService.resetUrl(request, token);
+        userService.checkUserExist(user);
+        PasswordResetToken token = tokenService.createPasswordResetToken(user);
+        String resetUrl = passwordService.createResetUrl(request, token);
         emailService.sendResetPasswordMessage(user, resetUrl);
 
         return new ResponseEntity(HttpStatus.OK);

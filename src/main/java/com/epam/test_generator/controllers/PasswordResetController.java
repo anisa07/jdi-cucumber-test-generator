@@ -27,7 +27,7 @@ public class PasswordResetController {
 
     }
 
-    @GetMapping
+    @GetMapping("/passwordReset")
     public ResponseEntity displayResetPasswordPage(@RequestParam String token) {
         tokenService.checkToken(token);
 

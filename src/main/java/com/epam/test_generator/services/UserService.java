@@ -3,6 +3,7 @@ package com.epam.test_generator.services;
 import com.epam.test_generator.dao.interfaces.UserDAO;
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.dto.UserDTO;
+import com.epam.test_generator.entities.PasswordResetToken;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import com.epam.test_generator.transformers.UserTransformer;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 
@@ -37,6 +39,12 @@ public class UserService {
     @Autowired
     private UserTransformer userTransformer;
 
+    @Autowired
+    PasswordService passwordService;
+
+    @Autowired
+    TokenService tokenService;
+
     public User getUserById(Long id) {
         return userDAO.findById(id);
 
@@ -46,6 +54,11 @@ public class UserService {
         return userDAO.findByEmail(email);
 
     }
+
+    public void saveUser(User user){
+        userDAO.save(user);
+    }
+
 
     public void createAdminIfDoesNotExist() {
 
@@ -66,7 +79,7 @@ public class UserService {
         return userTransformer.toDtoList(userDAO.findAll());
     }
 
-    public void createUser(LoginUserDTO loginUserDTO) {
+    public User createUser(LoginUserDTO loginUserDTO) {
         if (this.getUserByEmail(loginUserDTO.getEmail()) != null) {
             throw new UnauthorizedException(
                 "user with email:" + loginUserDTO.getEmail() + " already exist!");
@@ -76,9 +89,10 @@ public class UserService {
                 loginUserDTO.getEmail(),
                 encoder.encode(loginUserDTO.getPassword()),
                 roleService.getRoleByName(DEFAULT_ROLE));
+            user.setLocked(true);
             userDAO.save(user);
+            return user;
 
-            emailService.sendRegistrationMessage(loginUserDTO);
         }
     }
 
@@ -127,5 +141,18 @@ public class UserService {
         User byEmail = userDAO.findByEmail(email);
         byEmail.setPassword(password);
         userDAO.save(byEmail);
+    }
+
+    public void checkUserExist(User user) {
+        if (user == null) {
+            throw new UnauthorizedException(
+                    "User with email: " + user.getEmail() + " not found.");
+        }
+    }
+
+    public void sendConformationEmail(User user, HttpServletRequest request) {
+        PasswordResetToken userConformationToken = tokenService.AccauntConformationToken(user);
+        String confirmUrl = passwordService.createConfirmUrl(request, userConformationToken);
+        emailService.sendRegistrationMessage(user,confirmUrl);
     }
 }

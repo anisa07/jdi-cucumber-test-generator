@@ -12,7 +12,6 @@ import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.JwtTokenMalformedException;
 import com.epam.test_generator.services.exceptions.JwtTokenMissingException;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -22,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.UUID;
 
 @Service
 @PropertySource("classpath:application.properties")
@@ -80,7 +80,15 @@ public class TokenService {
         }
     }
 
-    public PasswordResetToken resetToken(User user) {
+    public PasswordResetToken createPasswordResetToken(User user) {
+        PasswordResetToken token = new PasswordResetToken();
+        token.setToken(UUID.randomUUID().toString());
+        token.setUser(user);
+        token.setExpiryDate(15);
+
+        return passwordResetTokenDAO.save(token);
+    }
+    public PasswordResetToken AccauntConformationToken(User user) {
         PasswordResetToken token = new PasswordResetToken();
         token.setToken(UUID.randomUUID().toString());
         token.setUser(user);

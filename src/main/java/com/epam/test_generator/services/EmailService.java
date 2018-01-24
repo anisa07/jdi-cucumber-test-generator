@@ -1,8 +1,6 @@
 package com.epam.test_generator.services;
 
-import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.entities.User;
-import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -11,6 +9,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 @Transactional
 @PropertySource("classpath:email.messages.properties")
@@ -34,12 +34,12 @@ public class EmailService {
         emailSender.send(message);
     }
 
-    public void sendRegistrationMessage(LoginUserDTO loginUserDTO) {
+    public void sendRegistrationMessage(User user, String confirmUrl) {
         String subject = environment.getProperty("subject.registration.message");
         String text = environment.getProperty("registration.message");
         text = String.format(text, "Maksim", "Stelmakh", "https://www.epam.com/",
-            "https://www.epam.com/");
-        sendSimpleMessage(loginUserDTO.getEmail(), subject, text);
+                confirmUrl);
+        sendSimpleMessage(user.getEmail(), subject, text);
     }
 
     public void sendResetPasswordMessage(User user, String resetUrl) {
