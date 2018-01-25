@@ -3,7 +3,6 @@ package com.epam.test_generator.services;
 import com.epam.test_generator.dao.interfaces.UserDAO;
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.dto.UserDTO;
-import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import com.epam.test_generator.transformers.UserTransformer;
@@ -12,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 
@@ -20,7 +18,7 @@ import java.util.List;
 @Service
 public class UserService {
 
-    private static final int MAX_ATTEMPTS = 5;
+    public static final int MAX_ATTEMPTS = 5;
 
     private final static String DEFAULT_ROLE = "GUEST";
 
@@ -55,7 +53,7 @@ public class UserService {
 
     }
 
-    public void saveUser(User user){
+    public void saveUser(User user) {
         userDAO.save(user);
     }
 
@@ -67,9 +65,9 @@ public class UserService {
         if (admin.isEmpty()) {
 
             final User user = new User(
-                "admin@mail.com",
-                encoder.encode("admin"),
-                roleService.getRoleByName("ADMIN"));
+                    "admin@mail.com",
+                    encoder.encode("admin"),
+                    roleService.getRoleByName("ADMIN"));
 
             userDAO.save(user);
         }
@@ -82,13 +80,13 @@ public class UserService {
     public User createUser(LoginUserDTO loginUserDTO) {
         if (this.getUserByEmail(loginUserDTO.getEmail()) != null) {
             throw new UnauthorizedException(
-                "user with email:" + loginUserDTO.getEmail() + " already exist!");
+                    "user with email:" + loginUserDTO.getEmail() + " already exist!");
         } else {
 
             final User user = new User(
-                loginUserDTO.getEmail(),
-                encoder.encode(loginUserDTO.getPassword()),
-                roleService.getRoleByName(DEFAULT_ROLE));
+                    loginUserDTO.getEmail(),
+                    encoder.encode(loginUserDTO.getPassword()),
+                    roleService.getRoleByName(DEFAULT_ROLE));
             user.setLocked(true);
             userDAO.save(user);
             return user;
@@ -140,6 +138,8 @@ public class UserService {
     public void updatePassword(String password, String email) {
         User byEmail = userDAO.findByEmail(email);
         byEmail.setPassword(password);
+        byEmail.setLocked(false);
+        byEmail.setAttempts(0);
         userDAO.save(byEmail);
     }
 
@@ -148,11 +148,5 @@ public class UserService {
             throw new UnauthorizedException(
                     "User with email: " + user.getEmail() + " not found.");
         }
-    }
-
-    public void sendConformationEmail(User user, HttpServletRequest request) {
-        Token userConformationToken = tokenService.createToken(user,1440);
-        String confirmUrl = passwordService.createConfirmUrl(request, userConformationToken);
-        emailService.sendRegistrationMessage(user,confirmUrl);
     }
 }

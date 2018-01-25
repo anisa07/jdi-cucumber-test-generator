@@ -21,6 +21,7 @@ public class PasswordResetController {
 
     @RequestMapping(value = "/passwordReset", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ResponseEntity passwordReset(@RequestBody @Valid PasswordResetDTO passwordResetDTO) {
+
         passwordService.passwordReset(passwordResetDTO);
 
         return new ResponseEntity(HttpStatus.OK);
@@ -29,6 +30,7 @@ public class PasswordResetController {
 
     @GetMapping("/passwordReset")
     public ResponseEntity displayResetPasswordPage(@RequestParam String token) {
+
         tokenService.checkToken(token);
 
         return new ResponseEntity<>(token, HttpStatus.OK);

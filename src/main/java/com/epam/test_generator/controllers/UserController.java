@@ -2,6 +2,7 @@ package com.epam.test_generator.controllers;
 
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.entities.User;
+import com.epam.test_generator.services.EmailService;
 import com.epam.test_generator.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,14 +21,16 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EmailService emailService;
+
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
     public ResponseEntity registerUserAccount(@RequestBody @Valid LoginUserDTO userDTO, HttpServletRequest request) {
 
         User user = userService.createUser(userDTO);
-        userService.sendConformationEmail(user,request);
+        emailService.sendRegistrationMessage(user, request);
         return new ResponseEntity(HttpStatus.OK);
     }
-
 
 
 }

@@ -101,14 +101,12 @@ public class TokenService {
         if (!(userService.isSamePasswords(loginUserDTO.getPassword(), user.getPassword()))) {
             int attempts = userService.updateFailureAttempts(user.getId());
             if (user.isLocked()) {
-                Token token = createToken(user, 15);
-                String resetUrl = passwordService.createResetUrl(request, token);
-                emailService.sendResetPasswordMessage(user, resetUrl);
+                emailService.sendResetPasswordMessage(user, request);
                 throw new UnauthorizedException(
                         "Incorrect password entered " + attempts + " times. "
                                 + "User account has been locked! Mail for reset your password was send on your email.");
             }
-            throw new UnauthorizedException("Incorrect password.");
+            throw new UnauthorizedException("Incorrect password! You have " + (UserService.MAX_ATTEMPTS - attempts) + " attempts remaining before your account will be blocked! ");
         }
         userService.invalidateAttempts(user.getId());
     }
