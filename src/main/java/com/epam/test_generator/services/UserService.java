@@ -3,7 +3,7 @@ package com.epam.test_generator.services;
 import com.epam.test_generator.dao.interfaces.UserDAO;
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.dto.UserDTO;
-import com.epam.test_generator.entities.PasswordResetToken;
+import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import com.epam.test_generator.transformers.UserTransformer;
@@ -151,7 +151,7 @@ public class UserService {
     }
 
     public void sendConformationEmail(User user, HttpServletRequest request) {
-        PasswordResetToken userConformationToken = tokenService.AccauntConformationToken(user);
+        Token userConformationToken = tokenService.createToken(user,1440);
         String confirmUrl = passwordService.createConfirmUrl(request, userConformationToken);
         emailService.sendRegistrationMessage(user,confirmUrl);
     }

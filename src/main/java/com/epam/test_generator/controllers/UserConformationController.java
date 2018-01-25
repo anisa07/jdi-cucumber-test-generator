@@ -1,7 +1,7 @@
 package com.epam.test_generator.controllers;
 
-import com.epam.test_generator.dao.interfaces.PasswordResetTokenDAO;
-import com.epam.test_generator.entities.PasswordResetToken;
+import com.epam.test_generator.dao.interfaces.TokenDAO;
+import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.PasswordService;
 import com.epam.test_generator.services.TokenService;
@@ -22,7 +22,7 @@ public class UserConformationController {
     private UserService userService;
 
     @Autowired
-    private PasswordResetTokenDAO passwordResetTokenDAO;
+    private TokenDAO tokenDAO;
 
     @Autowired
     private PasswordService passwordService;
@@ -30,12 +30,12 @@ public class UserConformationController {
     @GetMapping("/confirmAccount")
     public ResponseEntity<String> displayResetPasswordPage(@RequestParam String token) {
         tokenService.checkToken(token);
-        PasswordResetToken tokenByName = passwordService.getTokenByName(token);
+        Token tokenByName = passwordService.getTokenByName(token);
         User user = tokenByName.getUser();
         userService.checkUserExist(user);
         user.setLocked(false);
         userService.saveUser(user);
-        passwordResetTokenDAO.delete(tokenByName);
+        tokenDAO.delete(tokenByName);
 
         return new ResponseEntity<>("Your account is verified!", HttpStatus.OK);
     }

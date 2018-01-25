@@ -5,9 +5,9 @@ import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.epam.test_generator.dao.interfaces.PasswordResetTokenDAO;
+import com.epam.test_generator.dao.interfaces.TokenDAO;
 import com.epam.test_generator.dto.LoginUserDTO;
-import com.epam.test_generator.entities.PasswordResetToken;
+import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.JwtTokenMalformedException;
 import com.epam.test_generator.services.exceptions.JwtTokenMissingException;
@@ -35,7 +35,7 @@ public class TokenService {
     PasswordService passwordService;
 
     @Autowired
-    private PasswordResetTokenDAO passwordResetTokenDAO;
+    private TokenDAO tokenDAO;
 
     @Resource
     private Environment environment;
@@ -67,26 +67,18 @@ public class TokenService {
     }
 
 
-    public PasswordResetToken createPasswordResetToken(User user) {
-        PasswordResetToken token = new PasswordResetToken();
+    public Token createToken(User user, Integer minutes) {
+        Token token = new Token();
         token.setToken(UUID.randomUUID().toString());
         token.setUser(user);
-        token.setExpiryDate(15);
+        token.setExpiryDate(minutes);
 
-        return passwordResetTokenDAO.save(token);
+        return tokenDAO.save(token);
     }
 
-    public PasswordResetToken AccauntConformationToken(User user) {
-        PasswordResetToken token = new PasswordResetToken();
-        token.setToken(UUID.randomUUID().toString());
-        token.setUser(user);
-        token.setExpiryDate(15);
-
-        return passwordResetTokenDAO.save(token);
-    }
 
     public void checkToken(String token) {
-        PasswordResetToken resetToken = passwordResetTokenDAO.findByToken(token);
+        Token resetToken = tokenDAO.findByToken(token);
         if (resetToken == null) {
             throw new JwtTokenMissingException("Could not find password reset token.");
         } else if (resetToken.isExpired()) {
@@ -109,7 +101,7 @@ public class TokenService {
         if (!(userService.isSamePasswords(loginUserDTO.getPassword(), user.getPassword()))) {
             int attempts = userService.updateFailureAttempts(user.getId());
             if (user.isLocked()) {
-                PasswordResetToken token = createPasswordResetToken(user);
+                Token token = createToken(user, 15);
                 String resetUrl = passwordService.createResetUrl(request, token);
                 emailService.sendResetPasswordMessage(user, resetUrl);
                 throw new UnauthorizedException(

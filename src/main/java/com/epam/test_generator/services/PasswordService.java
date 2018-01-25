@@ -1,8 +1,8 @@
 package com.epam.test_generator.services;
 
-import com.epam.test_generator.dao.interfaces.PasswordResetTokenDAO;
+import com.epam.test_generator.dao.interfaces.TokenDAO;
 import com.epam.test_generator.dto.PasswordResetDTO;
-import com.epam.test_generator.entities.PasswordResetToken;
+import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,15 +20,15 @@ public class PasswordService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private PasswordResetTokenDAO passwordResetTokenDAO;
+    private TokenDAO tokenDAO;
 
-    public String createResetUrl(HttpServletRequest request, PasswordResetToken token) {
+    public String createResetUrl(HttpServletRequest request, Token token) {
         String url =
             request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
         String resetUrl = url + "/cucumber/passwordReset?token=" + token.getToken();
         return resetUrl;
     }
-    public String createConfirmUrl(HttpServletRequest request, PasswordResetToken token) {
+    public String createConfirmUrl(HttpServletRequest request, Token token) {
         String url =
             request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
         String resetUrl = url + "/cucumber/confirmAccount?token=" + token.getToken();
@@ -38,14 +38,14 @@ public class PasswordService {
 
     public void passwordReset(PasswordResetDTO passwordResetDTO) {
         String token = passwordResetDTO.getToken();
-        PasswordResetToken resetToken = passwordResetTokenDAO.findByToken(token);
+        Token resetToken = tokenDAO.findByToken(token);
         User user = resetToken.getUser();
         String updatedPassword = passwordEncoder.encode(passwordResetDTO.getPassword());
         userService.updatePassword(updatedPassword, user.getEmail());
-        passwordResetTokenDAO.delete(resetToken);
+        tokenDAO.delete(resetToken);
     }
 
-    public PasswordResetToken getTokenByName(String token){
-        return passwordResetTokenDAO.findByToken(token);
+    public Token getTokenByName(String token){
+        return tokenDAO.findByToken(token);
     }
 }

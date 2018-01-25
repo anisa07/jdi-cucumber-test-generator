@@ -10,7 +10,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 @Entity
-public class PasswordResetToken{
+public class Token {
 
     @Id
     @GeneratedValue()
@@ -34,7 +34,7 @@ public class PasswordResetToken{
     }
 
 
-    public PasswordResetToken() {
+    public Token() {
     }
 
     public Long getId() {

@@ -1,7 +1,7 @@
 package com.epam.test_generator.controllers;
 
 import com.epam.test_generator.dto.EmailDTO;
-import com.epam.test_generator.entities.PasswordResetToken;
+import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.EmailService;
 import com.epam.test_generator.services.PasswordService;
@@ -37,7 +37,7 @@ public class PasswordForgotController {
                                          HttpServletRequest request) throws Exception {
         User user = userService.getUserByEmail(email.getEmail());
         userService.checkUserExist(user);
-        PasswordResetToken token = tokenService.createPasswordResetToken(user);
+        Token token = tokenService.createToken(user,15);
         String resetUrl = passwordService.createResetUrl(request, token);
         emailService.sendResetPasswordMessage(user, resetUrl);
 
