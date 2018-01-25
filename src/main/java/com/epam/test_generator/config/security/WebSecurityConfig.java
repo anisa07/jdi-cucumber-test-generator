@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,7 +30,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtAuthenticationProvider authenticationProvider;
 
     @Autowired
-    public WebSecurityConfig(JwtAuthenticationProvider authenticationProvider) {
+    public WebSecurityConfig(@Lazy JwtAuthenticationProvider authenticationProvider) {
         this.authenticationProvider = authenticationProvider;
     }
 

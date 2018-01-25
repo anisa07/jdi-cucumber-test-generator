@@ -1,9 +1,5 @@
 package com.epam.test_generator.services;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
-
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.entities.User;
@@ -16,6 +12,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 
+import javax.servlet.http.HttpServletRequest;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
+
 @RunWith(MockitoJUnitRunner.class)
 public class TokenServiceTest {
 
@@ -25,12 +27,18 @@ public class TokenServiceTest {
     @Mock
     Environment environment;
 
-    @InjectMocks
-    TokenService sut;
+    @Mock
+    HttpServletRequest request;
+
     @Mock
     LoginUserDTO loginUserDTO;
+
     @Mock
     User user;
+
+    @InjectMocks
+    TokenService sut;
+
     private String badToken;
     private String goodToken;
 
@@ -64,25 +72,25 @@ public class TokenServiceTest {
     }
 
     @Test(expected = UnauthorizedException.class)
-    public void getToken_NoSuchUser() throws Exception {
-        sut.getToken(loginUserDTO);
+    public void checkPassword_NoSuchUser() throws Exception {
+        sut.checkPassword(loginUserDTO,request);
     }
 
     @Test(expected = UnauthorizedException.class)
-    public void getToken_IncorrectPassword() throws Exception {
+    public void checkPassword_IncorrectPassword() throws Exception {
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
-        sut.getToken(loginUserDTO);
+        sut.checkPassword(loginUserDTO, request);
     }
 
     @Test(expected = UnauthorizedException.class)
-    public void getToken_LockedUser_UnauthorizedException() throws Exception {
+    public void checkPassword_LockedUser_UnauthorizedException() throws Exception {
         User user = new User();
         user.setLocked(true);
 
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
-        sut.getToken(loginUserDTO);
+        sut.checkPassword(loginUserDTO, request);
     }
 
     @Test(expected = UnauthorizedException.class)
@@ -94,7 +102,7 @@ public class TokenServiceTest {
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(false);
-        sut.getToken(loginUserDTO);
+        sut.checkPassword(loginUserDTO,request);
 
         verify(userService,times(1)).updateFailureAttempts(anyLong());
         verify(userService,never()).invalidateAttempts(any());
@@ -109,6 +117,7 @@ public class TokenServiceTest {
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
+        sut.checkPassword(loginUserDTO,request);
         sut.getToken(loginUserDTO);
 
         verify(userService,never()).updateFailureAttempts(any());

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
@@ -27,6 +28,11 @@ import java.util.UUID;
 @PropertySource("classpath:application.properties")
 @Transactional(noRollbackFor = UnauthorizedException.class)
 public class TokenService {
+
+    @Autowired
+    EmailService emailService;
+    @Autowired
+    PasswordService passwordService;
 
     @Autowired
     private PasswordResetTokenDAO passwordResetTokenDAO;
@@ -38,11 +44,11 @@ public class TokenService {
     private UserService userService;
 
     public DecodedJWT validate(String token)
-        throws IOException {
+            throws IOException {
 
         JWTVerifier verifier = JWT.require(Algorithm.HMAC256(environment.getProperty("jwt_secret")))
-            .withIssuer("cucumber")
-            .build();
+                .withIssuer("cucumber")
+                .build();
         return verifier.verify(token);
     }
 
@@ -50,35 +56,16 @@ public class TokenService {
     public String getToken(LoginUserDTO loginUserDTO) {
 
         User user = userService.getUserByEmail(loginUserDTO.getEmail());
-        if (user == null) {
-            throw new UnauthorizedException(
-                "User with email: " + loginUserDTO.getEmail() + " not found.");
-        }
-
-        if (user.isLocked()) {
-            throw new UnauthorizedException("User Account is locked!");
-        }
-
-        if (!(userService.isSamePasswords(loginUserDTO.getPassword(), user.getPassword()))) {
-            int attempts = userService.updateFailureAttempts(user.getId());
-            if (user.isLocked()) {
-                throw new UnauthorizedException(
-                    "Incorrect password entered " + attempts + " times. "
-                        + "User account has been locked!");
-            }
-            throw new UnauthorizedException("Incorrect password.");
-        } else {
-            Builder builder = JWT.create()
+        Builder builder = JWT.create()
                 .withIssuer("cucumber")
                 .withClaim("id", user.getId());
-            try {
-                userService.invalidateAttempts(user.getId());
-                return builder.sign(Algorithm.HMAC256(environment.getProperty("jwt_secret")));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e.getMessage());
-            }
+        try {
+            return builder.sign(Algorithm.HMAC256(environment.getProperty("jwt_secret")));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
+
 
     public PasswordResetToken createPasswordResetToken(User user) {
         PasswordResetToken token = new PasswordResetToken();
@@ -88,6 +75,7 @@ public class TokenService {
 
         return passwordResetTokenDAO.save(token);
     }
+
     public PasswordResetToken AccauntConformationToken(User user) {
         PasswordResetToken token = new PasswordResetToken();
         token.setToken(UUID.randomUUID().toString());
@@ -103,8 +91,35 @@ public class TokenService {
             throw new JwtTokenMissingException("Could not find password reset token.");
         } else if (resetToken.isExpired()) {
             throw new JwtTokenMalformedException(
-                "Token has expired, please request a new password reset.");
+                    "Token has expired, please request a new password reset.");
         }
     }
 
+    public void checkPassword(LoginUserDTO loginUserDTO, HttpServletRequest request) {
+        User user = userService.getUserByEmail(loginUserDTO.getEmail());
+        if (user == null) {
+            throw new UnauthorizedException(
+                    "User with email: " + loginUserDTO.getEmail() + " not found.");
+        }
+
+        if (user.isLocked()) {
+            throw new UnauthorizedException("User Account is locked!");
+        }
+
+        if (!(userService.isSamePasswords(loginUserDTO.getPassword(), user.getPassword()))) {
+            int attempts = userService.updateFailureAttempts(user.getId());
+            if (user.isLocked()) {
+                PasswordResetToken token = createPasswordResetToken(user);
+                String resetUrl = passwordService.createResetUrl(request, token);
+                emailService.sendResetPasswordMessage(user, resetUrl);
+                throw new UnauthorizedException(
+                        "Incorrect password entered " + attempts + " times. "
+                                + "User account has been locked! Mail for reset your password was send on your email.");
+            }
+            throw new UnauthorizedException("Incorrect password.");
+        }
+        userService.invalidateAttempts(user.getId());
+    }
 }
+
+

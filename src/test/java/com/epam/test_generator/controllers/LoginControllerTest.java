@@ -1,11 +1,5 @@
 package com.epam.test_generator.controllers;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.services.TokenService;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -19,17 +13,24 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @RunWith(MockitoJUnitRunner.class)
 
 public class LoginControllerTest {
 
+    @Mock
+    private TokenService tokenService;
+
+    @InjectMocks
+    private LoginController loginController;
 
     @Mock
-    TokenService tokenService;
-    @InjectMocks
-    LoginController loginController;
-    @Mock
-    LoginUserDTO loginUserDTO;
+    private LoginUserDTO loginUserDTO;
+
     private MockMvc mockMvc;
     private LoginUserDTO user;
     private ObjectMapper mapper;
@@ -39,18 +40,18 @@ public class LoginControllerTest {
         user = new LoginUserDTO();
         mapper = new ObjectMapper();
         mockMvc = MockMvcBuilders.standaloneSetup(loginController)
-            .setControllerAdvice(new GlobalExceptionController())
-            .build();
+                .setControllerAdvice(new GlobalExceptionController())
+                .build();
     }
 
     @Test
     public void loginTest_200() throws Exception {
         user.setPassword("test");
         user.setEmail("test@test.ru");
-        when(tokenService.getToken(loginUserDTO)).thenReturn(anyString());
+        when(tokenService.getToken(loginUserDTO)).thenReturn("token");
         String json = mapper.writeValueAsString(user);
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(json))
-            .andDo(print()).andExpect(status().isOk());
+                .andDo(print()).andExpect(status().isOk());
     }
 
     @Test
@@ -59,8 +60,8 @@ public class LoginControllerTest {
         user.setEmail("test");
         String json = mapper.writeValueAsString(user);
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(json))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -68,8 +69,8 @@ public class LoginControllerTest {
         user.setEmail("test");
         String json = mapper.writeValueAsString(user);
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(json))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -77,24 +78,24 @@ public class LoginControllerTest {
         user.setEmail("test");
         String json = mapper.writeValueAsString(user);
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(json))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     public void loginTest_nullUser400() throws Exception {
         String json = mapper.writeValueAsString(user);
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(json))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     public void loginTest_nullJson500() throws Exception {
         String json = mapper.writeValueAsString(null);
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(json))
-            .andDo(print())
-            .andExpect(status().isInternalServerError());
+                .andDo(print())
+                .andExpect(status().isInternalServerError());
     }
 
 }

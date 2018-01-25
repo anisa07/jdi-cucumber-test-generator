@@ -48,5 +48,7 @@ public class EmailService {
         text = String.format(text, "Maksim", "Stelmakh", resetUrl,
             javaMailSender.getUsername());
         sendSimpleMessage(user.getEmail(), subject, text);
+
+
     }
 }
