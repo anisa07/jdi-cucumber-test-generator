@@ -82,6 +82,7 @@ public class TokenService {
         if (resetToken == null) {
             throw new JwtTokenMissingException("Could not find password reset token.");
         } else if (resetToken.isExpired()) {
+            tokenDAO.delete(resetToken);
             throw new JwtTokenMalformedException(
                     "Token has expired, please request a new password reset.");
         }
