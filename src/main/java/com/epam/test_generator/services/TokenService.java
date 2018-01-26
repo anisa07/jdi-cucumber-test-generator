@@ -3,8 +3,8 @@ package com.epam.test_generator.services;
 import com.epam.test_generator.dao.interfaces.TokenDAO;
 import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
-import com.epam.test_generator.services.exceptions.JwtTokenMalformedException;
-import com.epam.test_generator.services.exceptions.JwtTokenMissingException;
+import com.epam.test_generator.services.exceptions.TokenMalformedException;
+import com.epam.test_generator.services.exceptions.TokenMissingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -32,10 +32,10 @@ public class TokenService {
     public void checkToken(String token) {
         Token resetToken = tokenDAO.findByToken(token);
         if (resetToken == null) {
-            throw new JwtTokenMissingException("Could not find password reset token.");
+            throw new TokenMissingException("Could not find password reset token.");
         } else if (resetToken.isExpired()) {
             tokenDAO.delete(resetToken);
-            throw new JwtTokenMalformedException(
+            throw new TokenMalformedException(
                     "Token has expired, please request a new password reset.");
         }
     }

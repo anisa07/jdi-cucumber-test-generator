@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 @PropertySource("classpath:email.messages.properties")
 @Component
 public class EmailService {
+    public final static Integer CONFIRMATION_TIME = 1440;
+    public final static Integer PASSWORD_RESET_TIME = 15;
     @Autowired
     private PasswordService passwordService;
 
@@ -34,7 +36,7 @@ public class EmailService {
     private Environment environment;
 
     public void sendRegistrationMessage(User user, HttpServletRequest request) {
-        Token userConformationToken = tokenService.createToken(user, 1440);
+        Token userConformationToken = tokenService.createToken(user, CONFIRMATION_TIME);
         String confirmUrl = passwordService.createConfirmUrl(request, userConformationToken);
         String subject = environment.getProperty("subject.registration.message");
         String text = environment.getProperty("registration.message");
@@ -44,7 +46,7 @@ public class EmailService {
     }
 
     public void sendResetPasswordMessage(User user, HttpServletRequest request) {
-        Token token = tokenService.createToken(user, 15);
+        Token token = tokenService.createToken(user, PASSWORD_RESET_TIME);
         String resetUrl = passwordService.createResetUrl(request, token);
         String subject = environment.getProperty("subject.password.message");
         String text = environment.getProperty("reset.password.message");
@@ -53,7 +55,7 @@ public class EmailService {
         sendSimpleMessage(user.getEmail(), subject, text);
     }
 
-    private void sendSimpleMessage(String to, String subject, String text) {
+    void sendSimpleMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);

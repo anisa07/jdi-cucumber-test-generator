@@ -1,8 +1,10 @@
 package com.epam.test_generator.services;
 
+import com.epam.test_generator.dao.interfaces.TokenDAO;
 import com.epam.test_generator.dao.interfaces.UserDAO;
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.dto.UserDTO;
+import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import com.epam.test_generator.transformers.UserTransformer;
@@ -32,7 +34,16 @@ public class UserService {
     private UserDAO userDAO;
 
     @Autowired
+    private TokenService tokenService;
+
+    @Autowired
     private UserTransformer userTransformer;
+
+    @Autowired
+    private PasswordService passwordService;
+
+    @Autowired
+    private TokenDAO tokenDAO;
 
     public User getUserById(Long id) {
         return userDAO.findById(id);
@@ -139,5 +150,15 @@ public class UserService {
             throw new UnauthorizedException(
                     "User not found.");
         }
+    }
+
+    public void confirmUser(String token){
+        tokenService.checkToken(token);
+        Token tokenByName = passwordService.getTokenByName(token);
+        User user = tokenByName.getUser();
+        checkUserExist(user);
+        user.setLocked(false);
+        saveUser(user);
+        tokenDAO.delete(tokenByName);
     }
 }

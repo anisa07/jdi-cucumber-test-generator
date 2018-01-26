@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(MockitoJUnitRunner.class)
-
 public class LoginControllerTest {
 
     @Mock
@@ -45,7 +44,7 @@ public class LoginControllerTest {
     }
 
     @Test
-    public void loginTest_200() throws Exception {
+    public void loginTest_simpleUser_200() throws Exception {
         user.setPassword("test");
         user.setEmail("test@test.ru");
         when(loginService.getLoginJWTToken(loginUserDTO)).thenReturn("token");

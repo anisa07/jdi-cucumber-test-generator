@@ -1,8 +1,10 @@
 package com.epam.test_generator.services;
 
+import com.epam.test_generator.dao.interfaces.TokenDAO;
 import com.epam.test_generator.dao.interfaces.UserDAO;
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.dto.UserDTO;
+import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import com.epam.test_generator.transformers.UserTransformer;
@@ -23,6 +25,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
+
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
 
@@ -52,6 +55,18 @@ public class UserServiceTest {
 
     @Mock
     private EmailService emailService;
+
+    @Mock
+    private TokenService tokenService;
+
+    @Mock
+    private Token token;
+
+    @Mock
+    private PasswordService passwordService;
+
+    @Mock
+    private TokenDAO tokenDAO;
 
     @InjectMocks
     private UserService sut;
@@ -199,8 +214,26 @@ public class UserServiceTest {
     @Test
     public void createAdmin_nok() throws Exception {
         when(userDAO.findByRole(roleService.getRoleByName("ADMIN")))
-            .thenReturn(Collections.singletonList(new User()));
+                .thenReturn(Collections.singletonList(new User()));
         sut.createAdminIfDoesNotExist();
         verify(userDAO, times(0)).save(any(User.class));
+    }
+
+    @Test
+    public void confirmUser_SimpleToken_Ok() throws Exception {
+        when(passwordService.getTokenByName(anyString())).thenReturn(token);
+        when(token.getUser()).thenReturn(user);
+        sut.confirmUser(anyString());
+
+        verify(tokenDAO).delete(token);
+    }
+
+    @Test(expected = UnauthorizedException.class)
+    public void confirmUser_IncorrectToken_Exception() throws Exception {
+        when(passwordService.getTokenByName(anyString())).thenReturn(token);
+        when(token.getUser()).thenReturn(null);
+        sut.confirmUser(anyString());
+
+        verify(tokenDAO).delete(token);
     }
 }

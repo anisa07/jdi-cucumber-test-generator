@@ -5,7 +5,7 @@ import com.epam.test_generator.entities.Role;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.LoginService;
 import com.epam.test_generator.services.UserService;
-import com.epam.test_generator.services.exceptions.JwtTokenMalformedException;
+import com.epam.test_generator.services.exceptions.TokenMalformedException;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -65,7 +65,7 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
         try {
             jwt = loginService.validate(token);
         } catch (Exception e) {
-            throw new JwtTokenMalformedException("JWT token is not valid");
+            throw new TokenMalformedException("JWT token is not valid");
         }
         Long id = jwt.getClaim("id").asLong();
         User user = userService.getUserById(id);
