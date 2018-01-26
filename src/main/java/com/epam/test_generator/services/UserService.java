@@ -23,9 +23,6 @@ public class UserService {
     private final static String DEFAULT_ROLE = "GUEST";
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
     private RoleService roleService;
 
     @Autowired
@@ -36,12 +33,6 @@ public class UserService {
 
     @Autowired
     private UserTransformer userTransformer;
-
-    @Autowired
-    PasswordService passwordService;
-
-    @Autowired
-    TokenService tokenService;
 
     public User getUserById(Long id) {
         return userDAO.findById(id);
@@ -146,7 +137,7 @@ public class UserService {
     public void checkUserExist(User user) {
         if (user == null) {
             throw new UnauthorizedException(
-                    "User with email: " + user.getEmail() + " not found.");
+                    "User not found.");
         }
     }
 }

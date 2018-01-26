@@ -3,8 +3,6 @@ package com.epam.test_generator.controllers;
 import com.epam.test_generator.dto.EmailDTO;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.EmailService;
-import com.epam.test_generator.services.PasswordService;
-import com.epam.test_generator.services.TokenService;
 import com.epam.test_generator.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,12 +19,6 @@ public class PasswordForgotController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private TokenService tokenService;
-
-    @Autowired
-    private PasswordService passwordService;
 
     @Autowired
     private EmailService emailService;

@@ -1,7 +1,7 @@
 package com.epam.test_generator.controllers;
 
 import com.epam.test_generator.dto.LoginUserDTO;
-import com.epam.test_generator.services.TokenService;
+import com.epam.test_generator.services.LoginService;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LoginControllerTest {
 
     @Mock
-    private TokenService tokenService;
+    private LoginService loginService;
 
     @InjectMocks
     private LoginController loginController;
@@ -48,7 +48,7 @@ public class LoginControllerTest {
     public void loginTest_200() throws Exception {
         user.setPassword("test");
         user.setEmail("test@test.ru");
-        when(tokenService.getToken(loginUserDTO)).thenReturn("token");
+        when(loginService.getLoginJWTToken(loginUserDTO)).thenReturn("token");
         String json = mapper.writeValueAsString(user);
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andDo(print()).andExpect(status().isOk());

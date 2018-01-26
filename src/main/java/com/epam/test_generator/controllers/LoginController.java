@@ -2,7 +2,7 @@ package com.epam.test_generator.controllers;
 
 import com.epam.test_generator.dto.LoginUserDTO;
 import com.epam.test_generator.dto.TokenDTO;
-import com.epam.test_generator.services.TokenService;
+import com.epam.test_generator.services.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +20,13 @@ public class LoginController {
 
 
     @Autowired
-    private TokenService tokenService;
+    private LoginService loginService;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ResponseEntity<TokenDTO> login(@RequestBody @Valid LoginUserDTO userDTO, HttpServletRequest request)
         throws Exception {
-        tokenService.checkPassword(userDTO, request);
-        String token = tokenService.getToken(userDTO);
+        loginService.checkPassword(userDTO, request);
+        String token = loginService.getLoginJWTToken(userDTO);
 
         return new ResponseEntity<>(new TokenDTO(token), HttpStatus.OK);
     }

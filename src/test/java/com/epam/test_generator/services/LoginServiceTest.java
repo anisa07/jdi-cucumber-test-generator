@@ -19,7 +19,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TokenServiceTest {
+public class LoginServiceTest {
 
     @Mock
     UserService userService;
@@ -37,7 +37,7 @@ public class TokenServiceTest {
     User user;
 
     @InjectMocks
-    TokenService sut;
+    LoginService sut;
 
     private String badToken;
     private String goodToken;
@@ -68,7 +68,7 @@ public class TokenServiceTest {
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
-        sut.getToken(loginUserDTO);
+        sut.getLoginJWTToken(loginUserDTO);
     }
 
     @Test(expected = UnauthorizedException.class)
@@ -118,7 +118,7 @@ public class TokenServiceTest {
         when(userService.getUserByEmail(any())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
         sut.checkPassword(loginUserDTO,request);
-        sut.getToken(loginUserDTO);
+        sut.getLoginJWTToken(loginUserDTO);
 
         verify(userService,never()).updateFailureAttempts(any());
         verify(userService,times(1)).invalidateAttempts(any());

@@ -10,7 +10,7 @@ import com.epam.test_generator.entities.Role;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.AdminService;
 import com.epam.test_generator.services.RoleService;
-import com.epam.test_generator.services.TokenService;
+import com.epam.test_generator.services.LoginService;
 import com.epam.test_generator.services.UserService;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -61,7 +61,7 @@ public class AdminControllerSecurityTest {
     private UserService userService;
     @InjectMocks
     @Autowired
-    private TokenService tokenService;
+    private LoginService loginService;
 
     @Mock
     private RoleService roleService;
@@ -105,7 +105,7 @@ public class AdminControllerSecurityTest {
 
         ReflectionTestUtils.setField(adminService, "userService", userService);
         ReflectionTestUtils.setField(adminService, "roleService", roleService);
-        ReflectionTestUtils.setField(tokenService, "userService", userService);
+        ReflectionTestUtils.setField(loginService, "userService", userService);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class AdminControllerSecurityTest {
         when(userService.getUserByEmail(anyString())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
 
-        final String token = "Bearer " + tokenService.getToken(loginUserDTO);
+        final String token = "Bearer " + loginService.getLoginJWTToken(loginUserDTO);
 
         mvc.perform(get("/admin/users").header("Authorization", token).contentType("application/json"))
                 .andDo(print())
@@ -130,7 +130,7 @@ public class AdminControllerSecurityTest {
         when(userService.getUserByEmail(anyString())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
 
-        final String token = "Bearer " + tokenService.getToken(loginUserDTO);
+        final String token = "Bearer " + loginService.getLoginJWTToken(loginUserDTO);
 
 
         mvc.perform(get("/admin/users").header("Authorization", token).contentType("application/json"))
@@ -145,7 +145,7 @@ public class AdminControllerSecurityTest {
         when(userService.getUserByEmail(anyString())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
 
-        final String token = "Bearer " + tokenService.getToken(loginUserDTO);
+        final String token = "Bearer " + loginService.getLoginJWTToken(loginUserDTO);
 
         when(userService.getUserByEmail(eq("admin@email.com"))).thenReturn(passiveUser);
         when(roleService.getRoleByName(changeUserRoleDTO.getRole())).thenReturn(new Role("TEST_LEAD"));
@@ -166,7 +166,7 @@ public class AdminControllerSecurityTest {
         when(userService.getUserByEmail(anyString())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
 
-        final String token = "Bearer " + tokenService.getToken(loginUserDTO);
+        final String token = "Bearer " + loginService.getLoginJWTToken(loginUserDTO);
 
         when(userService.getUserByEmail(eq("admin@email.com"))).thenReturn(passiveUser);
         when(roleService.getRoleByName(changeUserRoleDTO.getRole())).thenReturn(null);
@@ -187,7 +187,7 @@ public class AdminControllerSecurityTest {
         when(userService.getUserByEmail(anyString())).thenReturn(user).thenReturn(passiveUser);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
 
-        final String token = "Bearer " + tokenService.getToken(loginUserDTO);
+        final String token = "Bearer " + loginService.getLoginJWTToken(loginUserDTO);
 
         final String json = new ObjectMapper().writeValueAsString(changeUserRoleDTO);
 
