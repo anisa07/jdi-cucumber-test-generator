@@ -205,14 +205,14 @@ public class UserServiceTest {
     }
 
     @Test
-    public void createAdmin_ok() throws Exception {
+    public void createAdmin_ValidInputDate_Ok() throws Exception {
         sut.createAdminIfDoesNotExist();
         verify(userDAO).save(any(User.class));
 
     }
 
     @Test
-    public void createAdmin_nok() throws Exception {
+    public void createAdmin_AlreadyExistedUser_Nok() throws Exception {
         when(userDAO.findByRole(roleService.getRoleByName("ADMIN")))
                 .thenReturn(Collections.singletonList(new User()));
         sut.createAdminIfDoesNotExist();

@@ -21,9 +21,10 @@ public class TokenDAOTest {
 
 
     @Autowired
-    TokenDAO sut;
+    private TokenDAO sut;
+
     @Test
-    public void findByToken_Ok() {
+    public void findByToken_SimpleToke_Ok() {
         Token token = new Token();
         token.setToken("token");
         token.setExpiryDate(15);

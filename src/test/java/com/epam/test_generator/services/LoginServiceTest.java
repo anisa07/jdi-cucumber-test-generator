@@ -52,19 +52,19 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void validate_ok() throws Exception {
+    public void validate_SimpleToken_Ok() throws Exception {
         sut.validate(goodToken);
 
     }
 
     @Test(expected = JWTDecodeException.class)
-    public void validate_notValidToken() throws Exception {
+    public void validate_notValidToken_Exception() throws Exception {
         sut.validate(badToken);
     }
 
 
     @Test
-    public void getToken_ok() throws Exception {
+    public void getToken_ValidToken_Ok() throws Exception {
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
         when(userService.isSamePasswords(anyString(), anyString())).thenReturn(true);
@@ -72,12 +72,12 @@ public class LoginServiceTest {
     }
 
     @Test(expected = UnauthorizedException.class)
-    public void checkPassword_NoSuchUser() throws Exception {
+    public void checkPassword_NotExistedUser_Exception() throws Exception {
         sut.checkPassword(loginUserDTO,request);
     }
 
     @Test(expected = UnauthorizedException.class)
-    public void checkPassword_IncorrectPassword() throws Exception {
+    public void checkPassword_IncorrectPassword_Exception() throws Exception {
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
         sut.checkPassword(loginUserDTO, request);

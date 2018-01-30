@@ -91,7 +91,7 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void getTokenByName_simpleToken() {
+    public void getTokenByName_simpleToken_Ok() {
         sut.getTokenByName(anyString());
         verify(tokenDAO).findByToken(anyString());
     }
