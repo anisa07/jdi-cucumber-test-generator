@@ -2,7 +2,7 @@ package com.epam.test_generator.services;
 
 import com.epam.test_generator.dao.interfaces.TokenDAO;
 import com.epam.test_generator.dao.interfaces.UserDAO;
-import com.epam.test_generator.dto.LoginUserDTO;
+import com.epam.test_generator.dto.RegistrationUserDTO;
 import com.epam.test_generator.dto.UserDTO;
 import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
@@ -67,6 +67,8 @@ public class UserService {
         if (admin.isEmpty()) {
 
             final User user = new User(
+                    "adminName",
+                    "adminSurname",
                     "admin@mail.com",
                     encoder.encode("admin"),
                     roleService.getRoleByName("ADMIN"));
@@ -79,15 +81,17 @@ public class UserService {
         return userTransformer.toDtoList(userDAO.findAll());
     }
 
-    public User createUser(LoginUserDTO loginUserDTO) {
-        if (this.getUserByEmail(loginUserDTO.getEmail()) != null) {
+    public User createUser(RegistrationUserDTO registrationUserDTO) {
+        if (this.getUserByEmail(registrationUserDTO.getEmail()) != null) {
             throw new UnauthorizedException(
-                    "user with email:" + loginUserDTO.getEmail() + " already exist!");
+                    "user with email:" + registrationUserDTO.getEmail() + " already exist!");
         } else {
 
             final User user = new User(
-                    loginUserDTO.getEmail(),
-                    encoder.encode(loginUserDTO.getPassword()),
+                    registrationUserDTO.getName(),
+                    registrationUserDTO.getSurname(),
+                    registrationUserDTO.getEmail(),
+                    encoder.encode(registrationUserDTO.getPassword()),
                     roleService.getRoleByName(DEFAULT_ROLE));
             user.setLocked(true);
             userDAO.save(user);

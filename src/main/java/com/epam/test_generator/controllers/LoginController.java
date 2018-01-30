@@ -26,7 +26,7 @@ public class LoginController {
     public ResponseEntity<TokenDTO> login(@RequestBody @Valid LoginUserDTO userDTO, HttpServletRequest request)
         throws Exception {
         loginService.checkPassword(userDTO, request);
-        String token = loginService.getLoginJWTToken(userDTO);
+        final String token = loginService.getLoginJWTToken(userDTO);
 
         return new ResponseEntity<>(new TokenDTO(token), HttpStatus.OK);
     }

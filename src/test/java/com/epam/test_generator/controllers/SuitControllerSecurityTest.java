@@ -59,6 +59,9 @@ public class SuitControllerSecurityTest {
     @Mock
     private User validUser;
 
+    @Mock
+    private Role role;
+
     @Autowired
     private LoginService loginService;
 
@@ -85,8 +88,12 @@ public class SuitControllerSecurityTest {
         loginUserDTO.setEmail("test@email.com");
         loginUserDTO.setPassword("test");
 
+        when(invalidUser.getName()).thenReturn("testInvalidName");
+        when(invalidUser.getSurname()).thenReturn("testValidName");
         when(invalidUser.getEmail()).thenReturn("test@email.com");
         when(invalidUser.getPassword()).thenReturn("test");
+        when(invalidUser.getRole()).thenReturn(role);
+        when(role.getName()).thenReturn("GUEST");
         when(invalidUser.getId()).thenReturn(new Long(0));
         when(invalidUser.getAttempts()).thenReturn(5);
         when(validUser.getEmail()).thenReturn("test@email.com");
