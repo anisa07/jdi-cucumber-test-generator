@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 @PropertySource("classpath:email.messages.properties")
 @Component
 public class EmailService {
+
     public final static Integer CONFIRMATION_TIME = 1440;
     public final static Integer PASSWORD_RESET_TIME = 15;
     @Autowired
@@ -41,7 +42,7 @@ public class EmailService {
         String subject = environment.getProperty("subject.registration.message");
         String text = environment.getProperty("registration.message");
         text = String.format(text, "Maksim", "Stelmakh", "https://www.epam.com/",
-                confirmUrl);
+            confirmUrl);
         sendSimpleMessage(user.getEmail(), subject, text);
     }
 
@@ -51,11 +52,11 @@ public class EmailService {
         String subject = environment.getProperty("subject.password.message");
         String text = environment.getProperty("reset.password.message");
         text = String.format(text, "Maksim", "Stelmakh", resetUrl,
-                javaMailSender.getUsername());
+            javaMailSender.getUsername());
         sendSimpleMessage(user.getEmail(), subject, text);
     }
 
-    void sendSimpleMessage(String to, String subject, String text) {
+    private void sendSimpleMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);

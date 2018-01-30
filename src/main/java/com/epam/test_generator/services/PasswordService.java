@@ -4,12 +4,14 @@ import com.epam.test_generator.dao.interfaces.TokenDAO;
 import com.epam.test_generator.dto.PasswordResetDTO;
 import com.epam.test_generator.entities.Token;
 import com.epam.test_generator.entities.User;
+import com.epam.test_generator.services.exceptions.IncorrectURI;
 import com.epam.test_generator.services.exceptions.TokenMissingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class PasswordService {
@@ -23,18 +25,41 @@ public class PasswordService {
     @Autowired
     private TokenDAO tokenDAO;
 
+    private final static String PASSWORD_RESET_PATH = "/cucumber/passwordReset";
+    private final static String CONFIRM_ACCOUNT_PATH = "/cucumber/confirmAccount";
+    private final static String TOKEN = "token=";
+
     public String createResetUrl(HttpServletRequest request, Token token) {
-        String url =
-                request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        String resetUrl = url + "/cucumber/passwordReset?token=" + token.getToken();
-        return resetUrl;
+        URI uri;
+        try {
+            uri = new URI(request.getScheme(),
+                null,
+                request.getServerName(),
+                request.getServerPort(),
+                PASSWORD_RESET_PATH,
+                TOKEN + token.getToken(),
+                null);
+
+        } catch (URISyntaxException e) {
+            throw new IncorrectURI(e.getMessage());
+        }
+        return uri.toString();
     }
 
     public String createConfirmUrl(HttpServletRequest request, Token token) {
-        String url =
-                request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        String resetUrl = url + "/cucumber/confirmAccount?token=" + token.getToken();
-        return resetUrl;
+        URI uri;
+        try {
+            uri = new URI(request.getScheme(),
+                null,
+                request.getServerName(),
+                request.getServerPort(),
+                CONFIRM_ACCOUNT_PATH,
+                TOKEN + token.getToken(),
+                null);
+        } catch (URISyntaxException e) {
+            throw new IncorrectURI(e.getMessage());
+        }
+        return uri.toString();
     }
 
 

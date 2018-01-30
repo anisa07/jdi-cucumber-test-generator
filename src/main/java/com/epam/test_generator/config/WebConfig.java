@@ -1,10 +1,12 @@
 package com.epam.test_generator.config;
 
+import javax.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.*;
@@ -16,7 +18,11 @@ import java.util.Properties;
 @EnableWebMvc
 @ComponentScan("com.epam.test_generator")
 @PropertySource(value = "classpath:config.properties")
+@PropertySource(value = "classpath:email.properties")
 public class WebConfig extends WebMvcConfigurerAdapter {
+
+    @Resource
+    private Environment environment;
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
@@ -26,11 +32,11 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     @Bean
     public JavaMailSenderImpl getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
+        mailSender.setHost(environment.getProperty("host"));
+        mailSender.setPort(Integer.parseInt(environment.getProperty("port")));
 
-        mailSender.setUsername("cucumbervarificator@gmail.com");
-        mailSender.setPassword("cucumberadmin");
+        mailSender.setUsername(environment.getProperty("email.username"));
+        mailSender.setPassword(environment.getProperty("password"));
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
@@ -59,7 +65,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedMethods("*");
+            .allowedMethods("*");
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.epam.test_generator.dto.ErrorDTO;
 import com.epam.test_generator.dto.ValidationErrorsDTO;
 import com.epam.test_generator.services.exceptions.BadRequestException;
 import com.epam.test_generator.services.exceptions.BadRoleException;
+import com.epam.test_generator.services.exceptions.IncorrectURI;
 import com.epam.test_generator.services.exceptions.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +77,11 @@ public class GlobalExceptionController {
     @ExceptionHandler(value = {BadRoleException.class})
     public ResponseEntity<ErrorDTO> roleUnexist(BadRoleException ex) {
         return new ResponseEntity<>(new ErrorDTO(ex), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {IncorrectURI.class})
+    public ResponseEntity<ErrorDTO> incorrectURI(IncorrectURI ex) {
+        return new ResponseEntity<>(new ErrorDTO(ex), HttpStatus.I_AM_A_TEAPOT);
     }
 
 }
