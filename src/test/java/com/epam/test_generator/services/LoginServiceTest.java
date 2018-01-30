@@ -2,6 +2,7 @@ package com.epam.test_generator.services;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.epam.test_generator.dto.LoginUserDTO;
+import com.epam.test_generator.entities.Role;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import org.junit.Before;
@@ -22,30 +23,39 @@ import static org.mockito.Mockito.*;
 public class LoginServiceTest {
 
     @Mock
-    UserService userService;
+    private UserService userService;
 
     @Mock
-    Environment environment;
+    private Environment environment;
 
     @Mock
-    HttpServletRequest request;
+    private HttpServletRequest request;
 
     @Mock
-    LoginUserDTO loginUserDTO;
+    private LoginUserDTO loginUserDTO;
 
     @Mock
-    User user;
+    private User user;
 
-    @InjectMocks
-    LoginService sut;
+    @Mock
+    private Role role;
 
     private String badToken;
     private String goodToken;
 
+    @InjectMocks
+    private LoginService sut;
+
     @Before
     public void setUp() throws Exception {
+        when(userService.getUserByEmail(anyString())).thenReturn(user);
         when(environment.getProperty(anyString())).thenReturn("iteaky");
+        when(user.getName()).thenReturn("name");
+        when(user.getSurname()).thenReturn("surname");
+        when(user.getEmail()).thenReturn("email");
         when(user.getAttempts()).thenReturn(5);
+        when(user.getRole()).thenReturn(role);
+        when(role.getName()).thenReturn("GUEST");
         badToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJciIsImlkIjoyfQ.dpsptV5O_062nzcMUeZa4QLTsAmQfXhQntfnpcMlZLU";
         goodToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjdWN1bWJlciIsImlkIjoyfQ.dpsptV5O_062nzcMUeZa4QLTsAmQfXhQntfnpcMlZLU";
 
@@ -85,8 +95,7 @@ public class LoginServiceTest {
 
     @Test(expected = UnauthorizedException.class)
     public void checkPassword_LockedUser_UnauthorizedException() throws Exception {
-        User user = new User();
-        user.setLocked(true);
+        when(user.isLocked()).thenReturn(true);
 
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
@@ -95,9 +104,9 @@ public class LoginServiceTest {
 
     @Test(expected = UnauthorizedException.class)
     public void getToken_LastFailureAttempt_UnauthorizedException() throws Exception {
-        User user = new User();
-        user.setAttempts(4);
-        user.setLocked(false);
+
+        when(user.getAttempts()).thenReturn(4);
+        when(user.isLocked()).thenReturn(false);
 
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);
@@ -110,9 +119,6 @@ public class LoginServiceTest {
 
     @Test
     public void getToken_SuccessAttempt_InvalidateUserAttempts(){
-        User user = new User();
-        user.setLocked(false);
-        user.setAttempts(0);
 
         when(loginUserDTO.getEmail()).thenReturn("email");
         when(userService.getUserByEmail(any())).thenReturn(user);

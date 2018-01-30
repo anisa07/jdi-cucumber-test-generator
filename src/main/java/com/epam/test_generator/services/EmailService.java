@@ -41,7 +41,7 @@ public class EmailService {
         String confirmUrl = passwordService.createConfirmUrl(request, userConformationToken);
         String subject = environment.getProperty("subject.registration.message");
         String text = environment.getProperty("registration.message");
-        text = String.format(text, "Maksim", "Stelmakh", "https://www.epam.com/",
+        text = String.format(text, user.getName(), user.getSurname(), "https://www.bddgenerator.com/",
             confirmUrl);
         sendSimpleMessage(user.getEmail(), subject, text);
     }
@@ -51,7 +51,7 @@ public class EmailService {
         String resetUrl = passwordService.createResetUrl(request, token);
         String subject = environment.getProperty("subject.password.message");
         String text = environment.getProperty("reset.password.message");
-        text = String.format(text, "Maksim", "Stelmakh", resetUrl,
+        text = String.format(text, user.getName(), user.getSurname(), resetUrl,
             javaMailSender.getUsername());
         sendSimpleMessage(user.getEmail(), subject, text);
     }

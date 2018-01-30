@@ -36,11 +36,11 @@ public class LoginService {
     private final static String ELEMENT_FOR_UNIQUE_TOKEN = "cucumber";
 
     public DecodedJWT validate(String token)
-        throws IOException {
+            throws IOException {
 
         JWTVerifier verifier = JWT.require(Algorithm.HMAC256(environment.getProperty("jwt_secret")))
-            .withIssuer(ELEMENT_FOR_UNIQUE_TOKEN)
-            .build();
+                .withIssuer(ELEMENT_FOR_UNIQUE_TOKEN)
+                .build();
         return verifier.verify(token);
     }
 
@@ -49,7 +49,7 @@ public class LoginService {
         User user = userService.getUserByEmail(loginUserDTO.getEmail());
         if (user == null) {
             throw new UnauthorizedException(
-                String.format("User with email: %s not found.", loginUserDTO.getEmail()));
+                    String.format("User with email: %s not found.", loginUserDTO.getEmail()));
         }
 
         if (user.isLocked()) {
@@ -61,12 +61,12 @@ public class LoginService {
             if (user.isLocked()) {
                 emailService.sendResetPasswordMessage(user, request);
                 throw new UnauthorizedException(String.format(
-                    "Incorrect password entered %s times. User account has been locked!"
-                        + " Mail for reset your password was send on your email.", attempts));
+                        "Incorrect password entered %s times. User account has been locked!"
+                                + " Mail for reset your password was send on your email.", attempts));
             }
             throw new UnauthorizedException(String.format("Incorrect password!"
-                    + " You have %s attempts remaining before your account will be blocked!",
-                UserService.MAX_ATTEMPTS - attempts));
+                            + " You have %s attempts remaining before your account will be blocked!",
+                    UserService.MAX_ATTEMPTS - attempts));
         }
         userService.invalidateAttempts(user.getId());
     }
@@ -75,8 +75,12 @@ public class LoginService {
 
         User user = userService.getUserByEmail(loginUserDTO.getEmail());
         JWTCreator.Builder builder = JWT.create()
-            .withIssuer(ELEMENT_FOR_UNIQUE_TOKEN)
-            .withClaim("id", user.getId());
+                .withIssuer(ELEMENT_FOR_UNIQUE_TOKEN)
+                .withClaim("id", user.getId())
+                .withClaim("email", user.getEmail())
+                .withClaim("given_name", user.getName())
+                .withClaim("family_name", user.getSurname())
+                .withClaim("role", user.getRole().getName());
         try {
             return builder.sign(Algorithm.HMAC256(this.environment.getProperty("jwt_secret")));
         } catch (UnsupportedEncodingException e) {
