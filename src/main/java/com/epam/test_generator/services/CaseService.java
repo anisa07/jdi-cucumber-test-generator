@@ -71,6 +71,13 @@ public class CaseService {
         return caseTransformer.toDto(getCase(projectId,suitId,caseId));
     }
 
+    /**
+     * Adds case to existing suit
+     * @param projectId project where to add case
+     * @param suitId  suit where to add case
+     * @param caseDTO case to add
+     * @return case id
+     */
     public Long addCaseToSuit(Long projectId, Long suitId, @Valid CaseDTO caseDTO) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
