@@ -1,8 +1,8 @@
 package com.epam.test_generator.dto;
 
 /**
- * This DTO is used in POJO for organisation history of cases' versions. It contains property that had been changed
- * (old and new value of the property).
+ * This DTO is used for organisation history of cases' versions. It contains property that have been changed
+ * (old and new value of the property). It is basically used in {@Link CaseVersionDTO}
  */
 public class PropertyDifferenceDTO {
 

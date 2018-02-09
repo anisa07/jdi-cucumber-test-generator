@@ -4,7 +4,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 
 /**
- * This DTO is used in password recovery scenario. User is identified by the given token.
+ * This DTO is used in password recovery scenario. User is identified by the given token. Password is a new password
+ * edited by current user.
  */
 public class PasswordResetDTO {
 
