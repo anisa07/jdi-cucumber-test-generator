@@ -25,8 +25,8 @@ public class ApplicationInitializer implements WebApplicationInitializer {
      * Configure the given {@link ServletContext}
      * with any servlets, filters, listeners context-params and attributes
      * necessary for initializing this web application.
-     * @param servletContext
-     * @throws ServletException
+     * @param servletContext the ServletContext to initialize
+     * @throws ServletException if any call against the given ServletContext throws a ServletException
      */
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
@@ -40,3 +40,4 @@ public class ApplicationInitializer implements WebApplicationInitializer {
         servlet.addMapping("/*");
     }
 }
+

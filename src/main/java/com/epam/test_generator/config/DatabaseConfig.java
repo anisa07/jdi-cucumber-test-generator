@@ -65,6 +65,7 @@ public class DatabaseConfig {
     /**
      * Set up custom {@link JpaTransactionManager} and binds it to
      * entityManagerFactory bean to manage transactions for it
+     * @return transactionManager binded to entityManagerFactory
      */
     @Bean
     public PlatformTransactionManager transactionManager() {
@@ -77,7 +78,7 @@ public class DatabaseConfig {
 
     /**
      * Load properties from hibernate.properties file to a {@link Properties} object.
-     * @return {@link Properties} containing Hibernate properties if hibernate.properties file exists in classpath
+     * @return properties object containing Hibernate properties if hibernate.properties file exists in classpath
      * @throws IllegalArgumentException if hibernate.properties file doesn't exist in classpath
      */
     private Properties getHibernateProperties() {
