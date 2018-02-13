@@ -71,6 +71,13 @@ public class CaseService {
         return caseTransformer.toDto(getCase(projectId,suitId,caseId));
     }
 
+    /**
+     * Adds case to existing suit
+     * @param projectId id of project where to add case
+     * @param suitId id of suit where to add case
+     * @param caseDTO case to add
+     * @return case id
+     */
     public Long addCaseToSuit(Long projectId, Long suitId, @Valid CaseDTO caseDTO) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -88,6 +95,13 @@ public class CaseService {
         return caze.getId();
     }
 
+    /**
+     * Adds case to existing suit using editCaseDTO
+     * @param projectId id of project where to add case
+     * @param suitId id of suit where to add case
+     * @param editCaseDTO case to add
+     * @return case id
+     */
     public Long addCaseToSuit(Long projectId, Long suitId, EditCaseDTO editCaseDTO)
         throws MethodArgumentNotValidException {
         CaseDTO caseDTO = new CaseDTO(editCaseDTO.getId(), editCaseDTO.getName(),
@@ -104,6 +118,13 @@ public class CaseService {
         return addCaseToSuit(projectId, suitId, caseDTO);
     }
 
+    /**
+     * Updates case info to info specified in editCaseDTO
+     * @param projectId id of project where to update case
+     * @param suitId id of suit where to update case
+     * @param caseId id of case which to update
+     * @param editCaseDTO info to update
+     */
     public void updateCase(Long projectId, Long suitId, Long caseId, EditCaseDTO editCaseDTO) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -123,6 +144,12 @@ public class CaseService {
         caseVersionDAO.save(caze);
     }
 
+    /**
+     * Deletes one case by id
+     * @param projectId id of project where to delete case
+     * @param suitId id of suit where to delete case
+     * @param caseId id of case to delete
+     */
     public void removeCase(Long projectId, Long suitId, Long caseId) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -137,6 +164,12 @@ public class CaseService {
         caseVersionDAO.delete(caze);
     }
 
+    /**
+     * Deletes multiple cases by ids
+     * @param projectId id of project where to delete cases
+     * @param suitId id of suit where to delete cases
+     * @param caseIds list of cases ids to delete
+     */
     public void removeCases(Long projectId, Long suitId, List<Long> caseIds) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -162,6 +195,13 @@ public class CaseService {
         return caseVersionTransformer.toDtoList(caseVersions);
     }
 
+    /**
+     * Restores case to previous version by caseId and commitId
+     * @param projectId id of project where to restore case
+     * @param suitId id of suit where to restore case
+     * @param caseId id of case to restore
+     * @param commitId id of commit to restore version
+     */
     public void restoreCase(Long projectId, Long suitId, Long caseId, String commitId) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -177,6 +217,14 @@ public class CaseService {
         caseVersionDAO.save(caseToRestore);
     }
 
+    /**
+     * Updates all cases to specified in list of editCaseDTOS
+     * @param projectId id of project where to update cases
+     * @param suitId id of suit where to update cases
+     * @param editCaseDTOS list of cases to update
+     * @return list of new cases ids
+     * @throws MethodArgumentNotValidException
+     */
     public List<Long> updateCases(Long projectId, long suitId, List<EditCaseDTO> editCaseDTOS)
         throws MethodArgumentNotValidException {
         List<Long> newCasesIds = new ArrayList<>();
