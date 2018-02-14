@@ -53,13 +53,15 @@ public class Case implements Serializable, Persistable<Long> {
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Tag> tags;
 
+    private String comment;
+
     public Case() {
         creationDate = Calendar.getInstance().getTime();
         updateDate = creationDate;
     }
 
     public Case(Long id, String name, String description, List<Step> steps,
-                Integer priority, Set<Tag> tags) {
+                Integer priority, Set<Tag> tags, String comment) {
         this();
         this.id = id;
         this.name = name;
@@ -67,11 +69,12 @@ public class Case implements Serializable, Persistable<Long> {
         this.steps = steps;
         this.priority = priority;
         this.tags = tags;
+        this.comment = comment;
     }
 
     public Case(String name, String description, List<Step> steps, Date creationDate,
                 Date updateDate,
-                Integer priority, Set<Tag> tags, Status status) {
+                Integer priority, Set<Tag> tags, Status status, String comment) {
         this.name = name;
         this.description = description;
         this.steps = steps;
@@ -79,19 +82,19 @@ public class Case implements Serializable, Persistable<Long> {
         this.updateDate = updateDate;
         this.priority = priority;
         this.tags = tags;
-
+        this.comment = comment;
         this.status = status;
     }
 
     public Case(String name, String description, List<Step> steps,
-                Integer priority, Set<Tag> tags, Status status) {
+                Integer priority, Set<Tag> tags, Status status, String comment) {
         this();
         this.name = name;
         this.description = description;
         this.steps = steps;
         this.priority = priority;
         this.tags = tags;
-
+        this.comment = comment;
         this.status = status;
     }
 
@@ -203,11 +206,19 @@ public class Case implements Serializable, Persistable<Long> {
         this.status = status;
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     @Override
     public String toString() {
         return String.format(
-            "Case{ id= %s ,name= %s, description= %s, steps= %s, creationDate= %s, priority= %s, tags= %s, status= %s};",
-            id, name, description, steps, creationDate, priority, tags, steps);
+            "Case{ id= %s ,name= %s, description= %s, steps= %s, creationDate= %s, priority= %s, tags= %s, status= %s, comment= %s};",
+            id, name, description, steps, creationDate, priority, tags, steps, comment);
     }
 
     @Override
@@ -228,7 +239,8 @@ public class Case implements Serializable, Persistable<Long> {
             && (steps != null ? steps.equals(aCase.steps) : aCase.steps == null)
             && (priority != null ? priority.equals(aCase.priority) : aCase.priority == null)
             && (status != null ? status.equals(aCase.status) : aCase.status == null)
-            && (tags != null ? tags.equals(aCase.tags) : aCase.tags == null);
+            && (tags != null ? tags.equals(aCase.tags) : aCase.tags == null)
+            && (comment != null ? comment.equals(aCase.comment) : aCase.comment == null);
     }
 
     @Override
@@ -240,6 +252,7 @@ public class Case implements Serializable, Persistable<Long> {
         result = 31 * result + (priority != null ? priority.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (tags != null ? tags.hashCode() : 0);
+        result = 31 * result + (comment != null ? comment.hashCode() : 0);
         return result;
     }
 }

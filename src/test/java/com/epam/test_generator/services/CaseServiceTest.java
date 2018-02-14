@@ -108,6 +108,9 @@ public class CaseServiceTest {
     private StateMachineAdapter stateMachineAdapter;
 
     @Mock
+    private CascadeUpdateService cascadeUpdateService;
+
+    @Mock
     private StateMachine<Status, Event> stateMachine;
 
     @Before
@@ -115,42 +118,58 @@ public class CaseServiceTest {
         final List<Case> listCases = new ArrayList<>();
 
         listCases.add(new Case(1L, "name 1", "Case 1",
-                listSteps, 1, setOfTags));
+                listSteps, 1, setOfTags, "comment 1"));
         listCases.add(new Case(2L, "name 2", "Case 2",
-                listSteps, 2, setOfTags));
+                listSteps, 2, setOfTags, "comment 2"));
 
         caze = new Case(SIMPLE_CASE_ID, "Case name", "Case desc",
-                listSteps, 1, setOfTags);
+                listSteps, 1, setOfTags, "comment");
         expectedCaseDTO = new CaseDTO(SIMPLE_CASE_ID, "Case name", "Case desc",
-                expectedListSteps, 1, expectedSetTags, Status.NOT_DONE);
+                expectedListSteps, 1, expectedSetTags, Status.NOT_DONE, "comment");
         suit = new Suit(SIMPLE_SUIT_ID, "Suit 1", "Suit desc",
                 listCases, 1, setOfTags, 1);
-        caze = new Case(SIMPLE_CASE_ID, "Case name", "Case desc", listSteps, 1, setOfTags);
+        caze = new Case(SIMPLE_CASE_ID, "Case name", "Case desc", listSteps, 1, setOfTags, "comment");
         expectedCaseDTO = new CaseDTO(SIMPLE_CASE_ID, "Case name", "Case desc", expectedListSteps, 1,
-                expectedSetTags, Status.NOT_DONE);
+                expectedSetTags, Status.NOT_DONE,  "comment");
         caseToRestore = new Case(SIMPLE_CASE_ID, "new name", "new description",
-                Lists.newArrayList(), 3, Sets.newHashSet());
+                Lists.newArrayList(), 3, Sets.newHashSet(),  "comment");
         suit = new Suit(SIMPLE_SUIT_ID, "Suit 1", "Suit desc", listCases, 1, setOfTags, 1);
 
         caseVersions = new ArrayList<>();
         expectedCaseVersions = new ArrayList<>();
 
+        StepDTO stepDTO = new StepDTO();
         PropertyDifference propertyDifference1 = new PropertyDifference("1", null, "3");
-        PropertyDifference propertyDifference2 = new PropertyDifference("2", 1, 2);
+        PropertyDifference propertyDifference2 = new PropertyDifference("2", "1", "2");
+        PropertyDifference propertyDifference3 = new PropertyDifference("3", null, stepDTO);
+
+        PropertyDifference propertyDifference4 = new PropertyDifference("4", stepDTO, stepDTO);
         PropertyDifferenceDTO propertyDifferenceDTO1 =
                 new PropertyDifferenceDTO("1", null, "3");
         PropertyDifferenceDTO propertyDifferenceDTO2 =
                 new PropertyDifferenceDTO("2", "1", "2");
+        PropertyDifferenceDTO propertyDifferenceDTO3 =
+            new PropertyDifferenceDTO("1", null, stepDTO);
+        PropertyDifferenceDTO propertyDifferenceDTO4 =
+            new PropertyDifferenceDTO("2", stepDTO, stepDTO);
 
         caseVersions.add(new CaseVersion("1.3", new Date(), "author",
                 Lists.newArrayList(propertyDifference1, propertyDifference2)));
         caseVersions.add(new CaseVersion("2.4", new Date(), "autho2",
-                Lists.newArrayList()));
+            Lists.newArrayList()));
+        caseVersions.add(new CaseVersion("3.5", new Date(), "author3",
+            Lists.newArrayList(propertyDifference3, propertyDifference4)));
+        caseVersions.add(new CaseVersion("4.6", new Date(), "autho4",
+            Lists.newArrayList()));
 
         expectedCaseVersions.add(new CaseVersionDTO("1.3", "", "author",
                 Lists.newArrayList(propertyDifferenceDTO1, propertyDifferenceDTO2)));
         expectedCaseVersions.add(new CaseVersionDTO("2.4", "", "autho2",
                 Lists.newArrayList()));
+        expectedCaseVersions.add(new CaseVersionDTO("3.5", "", "author3",
+            Lists.newArrayList(propertyDifferenceDTO3, propertyDifferenceDTO4)));
+        expectedCaseVersions.add(new CaseVersionDTO("4.6", "", "autho4",
+            Lists.newArrayList()));
     }
 
     @Test
@@ -197,9 +216,9 @@ public class CaseServiceTest {
 
     @Test
     public void add_CaseToSuit_Success()  {
-        final Case newCase = new Case(3L, "Case name", "Case 3", listSteps, 2, setOfTags);
+        final Case newCase = new Case(3L, "Case name", "Case 3", listSteps, 2, setOfTags,  "comment");
         final CaseDTO newCaseDTO = new CaseDTO(null, "Case name", "Case 3", expectedListSteps, 2,
-            expectedSetTags, Status.NOT_DONE);
+            expectedSetTags, Status.NOT_DONE,  "comment");
 
         when(suitService.getSuit(anyLong(), anyLong())).thenReturn(suit);
         when(caseTransformer.fromDto(any(CaseDTO.class))).thenReturn(newCase);
@@ -226,13 +245,14 @@ public class CaseServiceTest {
         when(suitService.getSuit(anyLong(), anyLong())).thenReturn(suit);
         when(caseDAO.findOne(anyLong())).thenReturn(caze);
 
-        editCaseDTO = new EditCaseDTO(caze.getDescription(), caze.getName(), caze.getPriority(),
-            caze.getStatus(), Action.UPDATE);
+        editCaseDTO = new EditCaseDTO(1L,caze.getDescription(), caze.getName(), caze.getPriority(),
+                caze.getStatus(), Collections.emptyList(), Action.UPDATE, caze.getComment());
 
         caseService.updateCase(SIMPLE_PROJECT_ID , SIMPLE_SUIT_ID, SIMPLE_CASE_ID, editCaseDTO);
 
         verify(suitService).getSuit(eq(SIMPLE_PROJECT_ID) , eq(SIMPLE_SUIT_ID));
         verify(caseDAO).findOne(eq(SIMPLE_CASE_ID));
+        verify(cascadeUpdateService).cascadeCaseStepsUpdate(SIMPLE_PROJECT_ID,SIMPLE_SUIT_ID,SIMPLE_CASE_ID,editCaseDTO);
         verify(caseVersionDAO).save(eq(caze));
     }
 
@@ -419,7 +439,7 @@ public class CaseServiceTest {
     @Test
     public void updateCases_ActionIsDelete_VerifyRemoveCaseInvoked()
         throws MethodArgumentNotValidException {
-        editCaseDTO = new EditCaseDTO("desc", "name", 1, Status.NOT_RUN, Action.DELETE);
+        editCaseDTO = new EditCaseDTO(1l,"desc", "name", 1, Status.NOT_RUN, Collections.emptyList(), Action.DELETE,  "comment");
         editCaseDTO.setId(SIMPLE_CASE_ID);
 
         CaseService mock = mock(CaseService.class);
@@ -433,8 +453,8 @@ public class CaseServiceTest {
     @Test
     public void updateCases_ActionIsUpdate_VerifyUpdateCaseInvoked()
         throws MethodArgumentNotValidException {
-        editCaseDTO = new EditCaseDTO("desc", "name", 1,
-            Status.NOT_RUN, Action.UPDATE);
+        editCaseDTO = new EditCaseDTO(1l,"desc", "name", 1,
+                Status.NOT_RUN, Collections.emptyList(), Action.UPDATE,  "comment");
         editCaseDTO.setId(SIMPLE_CASE_ID);
 
         CaseService mock = mock(CaseService.class);
@@ -448,8 +468,8 @@ public class CaseServiceTest {
     @Test
     public void updateCases_ActionIsCreate_VerifyAddCaseInvoked()
         throws MethodArgumentNotValidException {
-        editCaseDTO = new EditCaseDTO("desc", "name", 1,
-            Status.NOT_RUN, Action.CREATE);
+        editCaseDTO = new EditCaseDTO(1l, "desc", "name", 1,
+                Status.NOT_RUN, Collections.emptyList(), Action.CREATE,  "comment");
         editCaseDTO.setId(SIMPLE_CASE_ID);
 
         CaseService mock = mock(CaseService.class);

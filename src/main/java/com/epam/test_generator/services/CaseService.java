@@ -8,6 +8,7 @@ import com.epam.test_generator.dao.interfaces.CaseVersionDAO;
 import com.epam.test_generator.dto.CaseDTO;
 import com.epam.test_generator.dto.CaseVersionDTO;
 import com.epam.test_generator.dto.EditCaseDTO;
+import com.epam.test_generator.dto.PropertyDifferenceDTO;
 import com.epam.test_generator.entities.Case;
 import com.epam.test_generator.entities.Event;
 import com.epam.test_generator.entities.Status;
@@ -22,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.statemachine.StateMachine;
@@ -51,6 +53,9 @@ public class CaseService {
     private SuitService suitService;
 
     @Autowired
+    private CascadeUpdateService cascadeUpdateService;
+
+    @Autowired
     private CaseVersionDAO caseVersionDAO;
 
     @Autowired
@@ -68,16 +73,9 @@ public class CaseService {
     }
 
     public CaseDTO getCaseDTO(Long projectId, Long suitId, Long caseId) {
-        return caseTransformer.toDto(getCase(projectId,suitId,caseId));
+        return caseTransformer.toDto(getCase(projectId, suitId, caseId));
     }
 
-    /**
-     * Adds case to existing suit
-     * @param projectId id of project where to add case
-     * @param suitId id of suit where to add case
-     * @param caseDTO case to add
-     * @return case id
-     */
     public Long addCaseToSuit(Long projectId, Long suitId, @Valid CaseDTO caseDTO) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -95,18 +93,11 @@ public class CaseService {
         return caze.getId();
     }
 
-    /**
-     * Adds case to existing suit using editCaseDTO
-     * @param projectId id of project where to add case
-     * @param suitId id of suit where to add case
-     * @param editCaseDTO case to add
-     * @return case id
-     */
     public Long addCaseToSuit(Long projectId, Long suitId, EditCaseDTO editCaseDTO)
         throws MethodArgumentNotValidException {
         CaseDTO caseDTO = new CaseDTO(editCaseDTO.getId(), editCaseDTO.getName(),
             editCaseDTO.getDescription(), new ArrayList<>(),
-            editCaseDTO.getPriority(), new HashSet<>(), editCaseDTO.getStatus());
+            editCaseDTO.getPriority(), new HashSet<>(), editCaseDTO.getStatus(), editCaseDTO.getComment());
 
         BeanPropertyBindingResult beanPropertyBindingResult =
             new BeanPropertyBindingResult(caseDTO, CaseDTO.class.getSimpleName());
@@ -118,20 +109,16 @@ public class CaseService {
         return addCaseToSuit(projectId, suitId, caseDTO);
     }
 
-    /**
-     * Updates case info to info specified in editCaseDTO
-     * @param projectId id of project where to update case
-     * @param suitId id of suit where to update case
-     * @param caseId id of case which to update
-     * @param editCaseDTO info to update
-     */
-    public void updateCase(Long projectId, Long suitId, Long caseId, EditCaseDTO editCaseDTO) {
+    public List<Long> updateCase(Long projectId, Long suitId, Long caseId, EditCaseDTO editCaseDTO) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
         Case caze = caseDAO.findOne(caseId);
         checkNotNull(caze);
 
         caseBelongsToSuit(caze, suit);
+
+        final List<Long> failedStepIds = cascadeUpdateService
+            .cascadeCaseStepsUpdate(projectId, suitId, caseId, editCaseDTO);
 
         caze.setUpdateDate(Calendar.getInstance().getTime());
 
@@ -142,14 +129,9 @@ public class CaseService {
 
         caseDAO.save(caze);
         caseVersionDAO.save(caze);
+        return failedStepIds;
     }
 
-    /**
-     * Deletes one case by id
-     * @param projectId id of project where to delete case
-     * @param suitId id of suit where to delete case
-     * @param caseId id of case to delete
-     */
     public void removeCase(Long projectId, Long suitId, Long caseId) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -164,12 +146,6 @@ public class CaseService {
         caseVersionDAO.delete(caze);
     }
 
-    /**
-     * Deletes multiple cases by ids
-     * @param projectId id of project where to delete cases
-     * @param suitId id of suit where to delete cases
-     * @param caseIds list of cases ids to delete
-     */
     public void removeCases(Long projectId, Long suitId, List<Long> caseIds) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -195,13 +171,6 @@ public class CaseService {
         return caseVersionTransformer.toDtoList(caseVersions);
     }
 
-    /**
-     * Restores case to previous version by caseId and commitId
-     * @param projectId id of project where to restore case
-     * @param suitId id of suit where to restore case
-     * @param caseId id of case to restore
-     * @param commitId id of commit to restore version
-     */
     public void restoreCase(Long projectId, Long suitId, Long caseId, String commitId) {
         Suit suit = suitService.getSuit(projectId, suitId);
 
@@ -217,14 +186,6 @@ public class CaseService {
         caseVersionDAO.save(caseToRestore);
     }
 
-    /**
-     * Updates all cases to specified in list of editCaseDTOS
-     * @param projectId id of project where to update cases
-     * @param suitId id of suit where to update cases
-     * @param editCaseDTOS list of cases to update
-     * @return list of new cases ids
-     * @throws MethodArgumentNotValidException
-     */
     public List<Long> updateCases(Long projectId, long suitId, List<EditCaseDTO> editCaseDTOS)
         throws MethodArgumentNotValidException {
         List<Long> newCasesIds = new ArrayList<>();
@@ -252,7 +213,8 @@ public class CaseService {
         return newCasesIds;
     }
 
-    public Status performEvent(Long projectId, Long suitId, Long caseId, Event event) throws Exception {
+    public Status performEvent(Long projectId, Long suitId, Long caseId, Event event)
+        throws Exception {
         Case cs = getCase(projectId, suitId, caseId);
         StateMachine<Status, Event> stateMachine = stateMachineAdapter.restore(cs);
         if (stateMachine.sendEvent(event)) {
