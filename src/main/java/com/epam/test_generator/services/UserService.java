@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -67,11 +68,11 @@ public class UserService {
     /**
      * Creates in database user with admin role if none exists
      */
-    public void createAdminIfDoesNotExist() {
+    public List<UserDTO> createAdminIfDoesNotExist() {
 
-        final List<User> admin = userDAO.findByRole(roleService.getRoleByName("ADMIN"));
+        final List<User> admins = userDAO.findByRole(roleService.getRoleByName("ADMIN"));
 
-        if (admin.isEmpty()) {
+        if (admins.isEmpty()) {
 
             final User user = new User(
                     "adminName",
@@ -81,7 +82,12 @@ public class UserService {
                     roleService.getRoleByName("ADMIN"));
 
             userDAO.save(user);
+            return userTransformer.toDtoList(Collections.singletonList(user));
+
         }
+        return userTransformer.toDtoList(admins);
+
+
     }
 
     public List<UserDTO> getUsers() {

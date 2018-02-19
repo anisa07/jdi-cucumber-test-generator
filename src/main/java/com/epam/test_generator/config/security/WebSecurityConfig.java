@@ -71,9 +71,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        http
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.csrf().disable().cors().and()
                 .authorizeRequests()
                 .antMatchers("/registration", "/login","/passwordForgot","/passwordReset","/confirmAccount")
@@ -83,6 +82,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
     }
 
     public boolean checkProjectId(Authentication authentication, Long projectId) {
