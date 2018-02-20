@@ -8,9 +8,7 @@ public class JiraProject {
 
     private String description;
 
-    private String status;
 
-    private String lastUpdateDate;
 
     public String getName() {
         return name;
@@ -36,19 +34,4 @@ public class JiraProject {
         this.description = description;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(String lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
 }

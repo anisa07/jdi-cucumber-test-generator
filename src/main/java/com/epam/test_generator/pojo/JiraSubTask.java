@@ -9,8 +9,6 @@ public class JiraSubTask {
 
     private String status;
 
-    private String lastUpdateDate;
-
     private String jiraProjectKey;
 
     private String jiraParentKey;
@@ -45,14 +43,6 @@ public class JiraSubTask {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(String lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getJiraParentKey() {

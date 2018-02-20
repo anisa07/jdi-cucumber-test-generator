@@ -41,8 +41,8 @@ public class SuitService {
     @Autowired
     private CascadeUpdateService cascadeUpdateService;
 
-    public List<SuitDTO> getSuits() {
-        return suitTransformer.toDtoList(suitDAO.findAll());
+    public List<Suit> getSuits() {
+        return suitDAO.findAll();
     }
 
     public Suit getSuit(long projectId, long suitId) {

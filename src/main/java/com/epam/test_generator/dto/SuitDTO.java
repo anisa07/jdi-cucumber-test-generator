@@ -40,6 +40,9 @@ public class SuitDTO {
 
     private String jiraKey;
 
+    private String jiraProjectKey;
+
+
     public SuitDTO() {
         creationDate = Calendar.getInstance().getTime();
     }
@@ -140,6 +143,14 @@ public class SuitDTO {
     public String getJiraKey() { return jiraKey; }
 
     public void setJiraKey(String jiraKey) { this.jiraKey = jiraKey; }
+
+    public String getJiraProjectKey() {
+        return jiraProjectKey;
+    }
+
+    public void setJiraProjectKey(String jiraProjectKey) {
+        this.jiraProjectKey = jiraProjectKey;
+    }
 
     @Override
     public boolean equals(Object o) {

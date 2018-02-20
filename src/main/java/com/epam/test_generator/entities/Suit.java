@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * This class represents test suit essence. Test suit is a collection of test cases that are intended to be used
  * for testing software's behaviour. Besides some simple fields like id, name, description, history it consists of
- * tags and cases. List of {@Link cases} represents sequence of test cases that are linked to current {@Link Suit}.
+ * tags and cases. List of {@Link Case} represents sequence of test cases that are linked to current {@Link Suit}.
  * List of {@Link Tag} represents types of {@Link Suit} object.
  */
 @Entity
@@ -32,6 +32,8 @@ public class Suit implements Serializable, Persistable<Long> {
     private Date creationDate;
 
     private String jiraKey;
+
+    private String jiraProjectKey;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Tag> tags;
@@ -177,6 +179,14 @@ public class Suit implements Serializable, Persistable<Long> {
 
     public void setRowNumber(Integer rowNumber) {
         this.rowNumber = rowNumber;
+    }
+
+    public String getJiraProjectKey() {
+        return jiraProjectKey;
+    }
+
+    public void setJiraProjectKey(String jiraProjectKey) {
+        this.jiraProjectKey = jiraProjectKey;
     }
 
     public Case getCaseById(Long id) {

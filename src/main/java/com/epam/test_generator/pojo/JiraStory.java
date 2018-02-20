@@ -10,8 +10,6 @@ public class JiraStory {
 
     private String status;
 
-    private String lastUpdateDate;
-
     private String jiraProjectKey;
 
     public String getName() {
@@ -44,14 +42,6 @@ public class JiraStory {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(String lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getJiraProjectKey() {

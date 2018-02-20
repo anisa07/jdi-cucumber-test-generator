@@ -29,6 +29,10 @@ public class Case implements Serializable, Persistable<Long> {
 
     private String jiraKey;
 
+    private String jiraProjectKey;
+
+    private String jiraParentKey;
+
 
     @OneToMany(cascade = {CascadeType.ALL})
     private List<Step> steps;
@@ -212,6 +216,22 @@ public class Case implements Serializable, Persistable<Long> {
 
     public void setJiraKey(String jiraKey) {
         this.jiraKey = jiraKey;
+    }
+
+    public String getJiraProjectKey() {
+        return jiraProjectKey;
+    }
+
+    public void setJiraProjectKey(String jiraProjectKey) {
+        this.jiraProjectKey = jiraProjectKey;
+    }
+
+    public String getJiraParentKey() {
+        return jiraParentKey;
+    }
+
+    public void setJiraParentKey(String jiraParentKey) {
+        this.jiraParentKey = jiraParentKey;
     }
 
     @Override
