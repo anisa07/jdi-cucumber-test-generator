@@ -1,13 +1,15 @@
 package com.epam.test_generator.dto;
 
-import java.util.Objects;
-import java.util.Set;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Objects;
+import java.util.Set;
 
 public class ProjectDTO {
 
     private Long id;
+
+    private String jiraKey;
 
     @NotNull
     @Size(min = 1, max = 255)
@@ -69,6 +71,14 @@ public class ProjectDTO {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getJiraKey() {
+        return jiraKey;
+    }
+
+    public void setJiraKey(String jiraKey) {
+        this.jiraKey = jiraKey;
     }
 
     @Override

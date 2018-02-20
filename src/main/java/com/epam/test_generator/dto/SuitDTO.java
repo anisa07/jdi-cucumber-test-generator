@@ -38,6 +38,8 @@ public class SuitDTO {
     @Min(value = 1)
     private Integer rowNumber;
 
+    private String jiraKey;
+
     public SuitDTO() {
         creationDate = Calendar.getInstance().getTime();
     }
@@ -135,6 +137,10 @@ public class SuitDTO {
         this.rowNumber = rowNumber;
     }
 
+    public String getJiraKey() { return jiraKey; }
+
+    public void setJiraKey(String jiraKey) { this.jiraKey = jiraKey; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -147,14 +153,14 @@ public class SuitDTO {
         SuitDTO suitDTO = (SuitDTO) o;
 
         return (id != null ? id.equals(suitDTO.id) : suitDTO.id == null)
-            && (name != null ? name.equals(suitDTO.name) : suitDTO.name == null)
-            && (description != null ? description.equals(suitDTO.description)
-            : suitDTO.description == null)
-            && (cases != null ? cases.equals(suitDTO.cases) : suitDTO.cases == null)
-            && (priority != null ? priority.equals(suitDTO.priority) : suitDTO.priority == null)
-            && (tags != null ? tags.equals(suitDTO.tags) : suitDTO.tags == null)
-            && (rowNumber != null ? rowNumber.equals(suitDTO.rowNumber)
-            : suitDTO.rowNumber == null);
+                && (name != null ? name.equals(suitDTO.name) : suitDTO.name == null)
+                && (description != null ? description.equals(suitDTO.description)
+                : suitDTO.description == null)
+                && (cases != null ? cases.equals(suitDTO.cases) : suitDTO.cases == null)
+                && (priority != null ? priority.equals(suitDTO.priority) : suitDTO.priority == null)
+                && (tags != null ? tags.equals(suitDTO.tags) : suitDTO.tags == null)
+                && (rowNumber != null ? rowNumber.equals(suitDTO.rowNumber)
+                : suitDTO.rowNumber == null);
     }
 
     @Override
@@ -172,14 +178,14 @@ public class SuitDTO {
     @Override
     public String toString() {
         return "Suit{" +
-            "id=" + id +
-            ", name='" + name + '\'' +
-            ", description='" + description + '\'' +
-            ", cases=" + cases +
-            ", priority=" + priority +
-            ", tags=" + tags +
-            ", rowNumber=" + rowNumber +
-            '}';
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", cases=" + cases +
+                ", priority=" + priority +
+                ", tags=" + tags +
+                ", rowNumber=" + rowNumber +
+                '}';
     }
 }
 

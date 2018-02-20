@@ -1,12 +1,13 @@
 package com.epam.test_generator.config;
 
-import com.epam.test_generator.config.jira.JiraClient;
 import com.epam.test_generator.dto.ProjectDTO;
 import com.epam.test_generator.dto.UserDTO;
 import com.epam.test_generator.entities.Role;
 import com.epam.test_generator.services.ProjectService;
 import com.epam.test_generator.services.RoleService;
 import com.epam.test_generator.services.UserService;
+import net.rcarz.jiraclient.BasicCredentials;
+import net.rcarz.jiraclient.JiraException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -54,15 +55,22 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
         Set<UserDTO> adminsSet = new HashSet<>(admins);
 
 
-        JiraClient client = new JiraClient("konstantin_evstafev", "02031991Iteaky");
-
-        client.getAllProjects().forEach(s -> {
-            ProjectDTO projectDTO = new ProjectDTO();
-            projectDTO.setName(s.getName());
-            projectDTO.setUsers(adminsSet);
-            projectDTO.setDescription(s.getDescription() == null ? "No description" : s.getDescription());
-            projectService.createProjectwithoutPrincipal(projectDTO);
-        });
+/** Example for getProjects from Jira
+ */
+        BasicCredentials creds = new BasicCredentials("name", "pass");
+        net.rcarz.jiraclient.JiraClient client = new net.rcarz.jiraclient.JiraClient("https://jirapct.epam.com/jira", creds);
+        try {
+            client.getProjects().forEach(s -> {
+                ProjectDTO projectDTO = new ProjectDTO();
+                projectDTO.setName(s.getName());
+                projectDTO.setJiraKey(s.getKey());
+                projectDTO.setUsers(adminsSet);
+                projectDTO.setDescription(s.getDescription() == null ? "No description" : s.getDescription());
+                projectService.createProjectwithoutPrincipal(projectDTO);
+            });
+        } catch (JiraException e) {
+            e.printStackTrace();
+        }
 
 
     }

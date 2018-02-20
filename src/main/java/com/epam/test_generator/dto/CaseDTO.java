@@ -1,15 +1,16 @@
 package com.epam.test_generator.dto;
 
 import com.epam.test_generator.entities.Status;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 public class CaseDTO {
 
@@ -29,6 +30,9 @@ public class CaseDTO {
     private Date creationDate;
 
     private Date updateDate;
+
+    private String jiraKey;
+
 
     @NotNull
     @Min(value = 1)
@@ -138,6 +142,14 @@ public class CaseDTO {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getJiraKey() {
+        return jiraKey;
+    }
+
+    public void setJiraKey(String jiraKey) {
+        this.jiraKey = jiraKey;
     }
 
     @Override

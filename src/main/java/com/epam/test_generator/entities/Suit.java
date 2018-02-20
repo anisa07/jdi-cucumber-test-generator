@@ -31,6 +31,8 @@ public class Suit implements Serializable, Persistable<Long> {
 
     private Date creationDate;
 
+    private String jiraKey;
+
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Tag> tags;
 
@@ -107,6 +109,14 @@ public class Suit implements Serializable, Persistable<Long> {
         boolean isAllCasesNew = cases == null || cases.stream().allMatch(Case::isNew);
 
         return id == null && isAllTagsWithNullId && isAllCasesNew;
+    }
+
+    public String getJiraKey() {
+        return jiraKey;
+    }
+
+    public void setJiraKey(String jiraKey) {
+        this.jiraKey = jiraKey;
     }
 
     public void setId(Long id) {

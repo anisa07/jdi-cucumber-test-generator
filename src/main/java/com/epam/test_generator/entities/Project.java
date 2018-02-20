@@ -1,10 +1,10 @@
 package com.epam.test_generator.entities;
 
-import java.util.HashSet;
-import java.util.Set;
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * This class represents Project essence. Besides simple fields like id, name and description,
@@ -20,6 +20,8 @@ public class Project {
     @GeneratedValue
     @Id
     private Long id;
+
+    private String jiraKey;
 
     private String name;
 
@@ -105,6 +107,14 @@ public class Project {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getJiraKey() {
+        return jiraKey;
+    }
+
+    public void setJiraKey(String jiraKey) {
+        this.jiraKey = jiraKey;
     }
 
     @Override
