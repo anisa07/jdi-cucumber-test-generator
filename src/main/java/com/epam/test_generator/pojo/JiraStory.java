@@ -1,5 +1,7 @@
 package com.epam.test_generator.pojo;
 
+import net.rcarz.jiraclient.Issue;
+
 public class JiraStory {
 
     private String name;
@@ -8,9 +10,14 @@ public class JiraStory {
 
     private String description;
 
-    private String status;
-
     private String jiraProjectKey;
+
+    public JiraStory(Issue issue) {
+        name = issue.getSummary();
+        jiraKey = issue.getKey();
+        description = issue.getDescription();
+        jiraProjectKey = issue.getProject().getKey();
+    }
 
     public String getName() {
         return name;
@@ -34,14 +41,6 @@ public class JiraStory {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getJiraProjectKey() {

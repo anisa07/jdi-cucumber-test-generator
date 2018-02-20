@@ -1,26 +1,34 @@
 package com.epam.test_generator.dao.impl;
 
 import com.epam.test_generator.entities.Suit;
+import com.epam.test_generator.pojo.JiraStory;
 import net.rcarz.jiraclient.*;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.MalformedParametersException;
 
+@Component
 public class JiraStoryDAO {
 
     private final static String TYPE = "Story";
     private final static String uri = "https://jirapct.epam.com/jira";
 
-    public Issue getStoryByJiraKey(String jiraKey, String jiraUserName, String jiraPassword)   {
+    public JiraStory getStoryByJiraKey(String jiraKey, String jiraUserName, String jiraPassword) {
         BasicCredentials creds = new BasicCredentials(jiraUserName, jiraPassword);
         JiraClient client = new JiraClient(uri, creds);
         try {
-            return client.getIssue(jiraKey);
+            return new JiraStory(client.getIssue(jiraKey));
         } catch (JiraException e) {
-            return null;
+
+            if (e.getCause() instanceof RestException) {
+                RestException restException = (RestException) e.getCause();
+                if (restException.getHttpStatusCode() == 404) return null;
+            }
+            throw new MalformedParametersException(e.getMessage());
         }
     }
 
-    public void updateStoryByJiraKey(Suit suit, String jiraUserName, String jiraPassword)  {
+    public void updateStoryByJiraKey(Suit suit, String jiraUserName, String jiraPassword) {
         BasicCredentials creds = new BasicCredentials(jiraUserName, jiraPassword);
         JiraClient client = new JiraClient(uri, creds);
         try {
@@ -36,8 +44,7 @@ public class JiraStoryDAO {
 
     }
 
-    public void createStory(Suit suit, String jiraUserName, String jiraPassword)
-    {
+    public void createStory(Suit suit, String jiraUserName, String jiraPassword) {
         BasicCredentials creds = new BasicCredentials(jiraUserName, jiraPassword);
         JiraClient client = new JiraClient(uri, creds);
         try {
@@ -48,7 +55,7 @@ public class JiraStoryDAO {
                     .execute();
         } catch (JiraException e) {
             throw new MalformedParametersException(e.getMessage());
-                    }
+        }
 
     }
 

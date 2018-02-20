@@ -1,5 +1,8 @@
 package com.epam.test_generator.pojo;
 
+import net.rcarz.jiraclient.Project;
+
+
 public class JiraProject {
 
     private String name;
@@ -8,6 +11,11 @@ public class JiraProject {
 
     private String description;
 
+    public JiraProject(Project project) {
+        name = project.getName();
+        jiraKey = project.getKey();
+        description = project.getDescription();
+    }
 
 
     public String getName() {

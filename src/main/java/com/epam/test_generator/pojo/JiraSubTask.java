@@ -1,5 +1,7 @@
 package com.epam.test_generator.pojo;
 
+import net.rcarz.jiraclient.Issue;
+
 public class JiraSubTask {
     private String name;
 
@@ -7,11 +9,18 @@ public class JiraSubTask {
 
     private String description;
 
-    private String status;
-
     private String jiraProjectKey;
 
     private String jiraParentKey;
+
+    public JiraSubTask(Issue issue) {
+        name = issue.getSummary();
+        description = issue.getDescription();
+        jiraKey = issue.getKey();
+        jiraProjectKey = issue.getProject().getKey();
+        jiraParentKey = issue.getParent().getKey();
+
+    }
 
     public String getName() {
         return name;
@@ -35,14 +44,6 @@ public class JiraSubTask {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getJiraParentKey() {

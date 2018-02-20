@@ -1,22 +1,30 @@
 package com.epam.test_generator.dao.impl;
 
 import com.epam.test_generator.entities.Case;
+import com.epam.test_generator.pojo.JiraSubTask;
 import net.rcarz.jiraclient.*;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.MalformedParametersException;
 
+@Component
 public class JiraSubStroryDAO {
     private final static String TYPE = "Sub-story";
 
     private final static String uri = "https://jirapct.epam.com/jira";
 
-    public Issue getSubStoryByJiraKey(String jiraKey, String jiraUserName, String jiraPassword)   {
+    public JiraSubTask getSubStoryByJiraKey(String jiraKey, String jiraUserName, String jiraPassword)   {
         BasicCredentials creds = new BasicCredentials(jiraUserName, jiraPassword);
         JiraClient client = new JiraClient(uri, creds);
         try {
-            return client.getIssue(jiraKey);
+            return new JiraSubTask(client.getIssue(jiraKey));
         } catch (JiraException e) {
-            return null;
+
+            if (e.getCause() instanceof RestException) {
+                RestException restException = (RestException) e.getCause();
+                if (restException.getHttpStatusCode() == 404) return null;
+            }
+            throw new MalformedParametersException(e.getMessage());
         }
     }
 

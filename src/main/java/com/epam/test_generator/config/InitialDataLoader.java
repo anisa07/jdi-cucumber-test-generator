@@ -57,7 +57,7 @@ public class InitialDataLoader implements ApplicationListener<ContextRefreshedEv
 
 /** Example for getProjects from Jira
  */
-        BasicCredentials creds = new BasicCredentials("name", "pass");
+        BasicCredentials creds = new BasicCredentials("Auto_EPM-LSTR_BDD-GE", "Eg2CC6EmGhaWHGQvYh6kVjfkV");
         net.rcarz.jiraclient.JiraClient client = new net.rcarz.jiraclient.JiraClient("https://jirapct.epam.com/jira", creds);
         try {
             client.getProjects().forEach(s -> {
