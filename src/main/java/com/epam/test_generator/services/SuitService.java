@@ -1,5 +1,8 @@
 package com.epam.test_generator.services;
 
+import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
+import static com.epam.test_generator.services.utils.UtilsService.suitBelongsToProject;
+
 import com.epam.test_generator.dao.interfaces.CaseVersionDAO;
 import com.epam.test_generator.dao.interfaces.SuitDAO;
 import com.epam.test_generator.dto.StepDTO;
@@ -11,19 +14,15 @@ import com.epam.test_generator.entities.Status;
 import com.epam.test_generator.entities.Suit;
 import com.epam.test_generator.services.exceptions.BadRequestException;
 import com.epam.test_generator.transformers.SuitTransformer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
-import static com.epam.test_generator.services.utils.UtilsService.suitBelongsToProject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @Transactional
 @Service
