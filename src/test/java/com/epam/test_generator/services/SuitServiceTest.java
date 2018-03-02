@@ -1,24 +1,11 @@
 package com.epam.test_generator.services;
 
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyListOf;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.epam.test_generator.dao.interfaces.CaseVersionDAO;
 import com.epam.test_generator.dao.interfaces.SuitDAO;
-import com.epam.test_generator.dto.SuitUpdateDTO;
 import com.epam.test_generator.dto.SuitDTO;
 import com.epam.test_generator.dto.SuitRowNumberUpdateDTO;
+import com.epam.test_generator.dto.SuitUpdateDTO;
 import com.epam.test_generator.entities.Project;
 import com.epam.test_generator.entities.Suit;
 import com.epam.test_generator.services.exceptions.BadRequestException;
@@ -26,11 +13,6 @@ import com.epam.test_generator.services.exceptions.NotFoundException;
 import com.epam.test_generator.transformers.SuitTransformer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +20,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SuitServiceTest {
@@ -215,11 +205,11 @@ public class SuitServiceTest {
         final SuitRowNumberUpdateDTO update = new SuitRowNumberUpdateDTO(5L, 2);
         final SuitRowNumberUpdateDTO update1 = new SuitRowNumberUpdateDTO(4L, 1);
 
-        List<SuitRowNumberUpdateDTO> rowNumbers = new ArrayList<>(
+        final List<SuitRowNumberUpdateDTO> rowNumbers = new ArrayList<>(
             Arrays.asList(update, update1)
         );
 
-        List<Suit> suits = Lists.newArrayList(new Suit(
+        final List<Suit> allProjectsSuits = Lists.newArrayList(new Suit(
                 4L,
                 "name",
                 "description",
@@ -236,17 +226,73 @@ public class SuitServiceTest {
                 2,
                 new HashSet<>(),
                 1
+            ),
+            new Suit(
+                6L,
+                "name3",
+                "description3",
+                new ArrayList<>(),
+                1,
+                new HashSet<>(),
+                3
             ));
 
-        when(suitDAO.findByIdInOrderById(Sets.newHashSet(5L, 4L))).thenReturn(suits);
+        expectedProject.setSuits(allProjectsSuits);
 
-        List<SuitRowNumberUpdateDTO> actualUpdatedSuitDTOs = suitService.updateSuitRowNumber(rowNumbers);
+        when(projectService.getProjectByProjectId(anyLong())).thenReturn(expectedProject);
 
-        assertThat(1, is(equalTo(suits.get(0).getRowNumber())));
-        assertThat(2, is(equalTo(suits.get(1).getRowNumber())));
+        final List<SuitRowNumberUpdateDTO> actualUpdatedSuitDTOs = suitService.updateSuitRowNumber(SIMPLE_PROJECT_ID, rowNumbers);
+
+        assertThat(1, is(equalTo(allProjectsSuits.get(0).getRowNumber())));
+        assertThat(2, is(equalTo(allProjectsSuits.get(1).getRowNumber())));
         assertEquals(rowNumbers, actualUpdatedSuitDTOs);
 
-        verify(suitDAO).save(eq(suits));
+        final List<Suit> expectedUpdatedSuits = Lists.newArrayList(allProjectsSuits.get(0), allProjectsSuits.get(1));
+
+        verify(suitDAO).save(eq(expectedUpdatedSuits));
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void updateSuitRowNumber_throwsException_thereIsNoSuchSuitInProjectWithSuchId() {
+        final SuitRowNumberUpdateDTO update = new SuitRowNumberUpdateDTO(5L, 2);
+        final SuitRowNumberUpdateDTO update1 = new SuitRowNumberUpdateDTO(4L, 1);
+        final SuitRowNumberUpdateDTO update2 = new SuitRowNumberUpdateDTO(7L, 3);
+
+        final List<SuitRowNumberUpdateDTO> rowNumbers = new ArrayList<>(
+                Arrays.asList(update, update1, update2)
+        );
+
+        final List<Suit> allProjectsSuits = Lists.newArrayList(new Suit(
+                        4L,
+                        "name",
+                        "description",
+                        new ArrayList<>(),
+                        3,
+                        new HashSet<>(),
+                        2
+                ),
+                new Suit(
+                        5L,
+                        "name2",
+                        "description2",
+                        new ArrayList<>(),
+                        2,
+                        new HashSet<>(),
+                        1
+                ),
+                new Suit(
+                        6L,
+                        "name3",
+                        "description3",
+                        new ArrayList<>(),
+                        1,
+                        new HashSet<>(),
+                        3
+                ));
+
+        expectedProject.setSuits(allProjectsSuits);
+        when(projectService.getProjectByProjectId(anyLong())).thenReturn(expectedProject);
+        suitService.updateSuitRowNumber(SIMPLE_PROJECT_ID, rowNumbers);
     }
 
 
@@ -259,7 +305,9 @@ public class SuitServiceTest {
         );
 
         when(suitDAO.findByIdInOrderById(Sets.newHashSet(5L, 4L))).thenReturn(new ArrayList<>());
-        suitService.updateSuitRowNumber(rowNumbers);
+        when(projectService.getProjectByProjectId(anyLong())).thenReturn(expectedProject);
+
+        suitService.updateSuitRowNumber(SIMPLE_PROJECT_ID, rowNumbers);
     }
 
     @Test(expected = BadRequestException.class)
@@ -270,7 +318,7 @@ public class SuitServiceTest {
             new SuitRowNumberUpdateDTO(null, null)
         );
 
-        suitService.updateSuitRowNumber(rowNumbers);
+        suitService.updateSuitRowNumber(SIMPLE_PROJECT_ID, rowNumbers);
     }
 
     @Test(expected = BadRequestException.class)
@@ -289,7 +337,9 @@ public class SuitServiceTest {
             2));
 
         when(suitDAO.findByIdInOrderById(Sets.newHashSet(5L, 4L))).thenReturn(retrievedListOfSuits);
-        suitService.updateSuitRowNumber(rowNumbers);
+        when(projectService.getProjectByProjectId(anyLong())).thenReturn(expectedProject);
+
+        suitService.updateSuitRowNumber(SIMPLE_PROJECT_ID, rowNumbers);
     }
 
     @Test(expected = NotFoundException.class)
