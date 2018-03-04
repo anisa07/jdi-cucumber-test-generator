@@ -137,8 +137,8 @@ public class SuitService {
      * @param rowNumberUpdates List of SuitRowNumberUpdateDTOs
      * @return list of {@link SuitRowNumberUpdateDTO} to check on the frontend
      */
-    public List<SuitRowNumberUpdateDTO> updateSuitRowNumber
-    (long projectId, List<SuitRowNumberUpdateDTO> rowNumberUpdates) {
+    public List<SuitRowNumberUpdateDTO> updateSuitRowNumber(
+        long projectId, List<SuitRowNumberUpdateDTO> rowNumberUpdates) {
         if (rowNumberUpdates.isEmpty()) {
             throw new BadRequestException("The list has not to be empty");
         }
@@ -181,9 +181,9 @@ public class SuitService {
 
     private List<Suit> retrieveSuitsFromProjectBySuitIds(Project currentProject,
                                                          Set<Long> suitsIds) {
-        final List<Suit> neededSuits = currentProject.getSuits().stream().
-                filter(s -> suitsIds.contains(s.getId())).
-                collect(Collectors.toList());
+        final List<Suit> neededSuits = currentProject.getSuits().stream()
+            .filter(s -> suitsIds.contains(s.getId()))
+            .collect(Collectors.toList());
         if (neededSuits.size() != suitsIds.size()) {
             throw new BadRequestException("Some Id of suit doesn't belong to current Project");
         }

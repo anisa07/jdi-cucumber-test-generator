@@ -149,11 +149,13 @@ public class SuitController {
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD"})
     @RequestMapping(value = "/projects/{projectId}/suits/updateRowNumbers",
             method = RequestMethod.PUT, consumes = "application/json")
-    public ResponseEntity<List<SuitRowNumberUpdateDTO>> updateSuitRowNumber
-            (@PathVariable("projectId") long projectId,
+    public ResponseEntity<List<SuitRowNumberUpdateDTO>> updateSuitRowNumber(
+        @PathVariable("projectId") long projectId,
              @RequestBody @Valid List<SuitRowNumberUpdateDTO> rowNumberUpdates) {
 
-        List<SuitRowNumberUpdateDTO> updatedSuitRowNumberUpdateDTOs = suitService.updateSuitRowNumber(projectId,rowNumberUpdates);
+        final List<SuitRowNumberUpdateDTO> updatedSuitRowNumberUpdateDTOs =
+            suitService
+            .updateSuitRowNumber(projectId,rowNumberUpdates);
         return new ResponseEntity<>(updatedSuitRowNumberUpdateDTOs, HttpStatus.OK);
     }
 
@@ -186,7 +188,8 @@ public class SuitController {
         paramType = "header", dataType = "string", required = true)
     public ResponseEntity<String> downloadFile(@RequestBody @Valid SuitDTO suitDTO)
         throws IOException {
-        List<Long> caseIds = suitDTO.getCases().stream().map(CaseDTO::getId)
+        final List<Long> caseIds = suitDTO.getCases().stream()
+            .map(CaseDTO::getId)
             .collect(Collectors.toList());
 
         return new ResponseEntity<>(ioService.generateFile(suitDTO.getId(), caseIds),
