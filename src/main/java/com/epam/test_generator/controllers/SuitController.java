@@ -154,8 +154,7 @@ public class SuitController {
              @RequestBody @Valid List<SuitRowNumberUpdateDTO> rowNumberUpdates) {
 
         final List<SuitRowNumberUpdateDTO> updatedSuitRowNumberUpdateDTOs =
-            suitService
-            .updateSuitRowNumber(projectId,rowNumberUpdates);
+            suitService.updateSuitRowNumber(projectId, rowNumberUpdates);
         return new ResponseEntity<>(updatedSuitRowNumberUpdateDTOs, HttpStatus.OK);
     }
 
