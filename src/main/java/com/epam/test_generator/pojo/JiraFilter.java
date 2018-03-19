@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public class JiraFilter {
-    private RestClient restclient;
     private String self;
     private String id;
     private String name;
@@ -15,19 +14,18 @@ public class JiraFilter {
     private String jql;
 
     public JiraFilter(RestClient restClient, JSONObject json) {
-        this.restclient = restClient;
         final JSONObject jsonObject = Objects.requireNonNull(json);
-        deserialize(jsonObject);
+        deserialize(jsonObject, restClient);
     }
 
-    private void deserialize(JSONObject jsonObject) {
+    private void deserialize(JSONObject jsonObject, RestClient restClient) {
         final Map<?, ?> map = jsonObject;
 
         self = Field.getString(map.get("self"));
         id = Field.getString(map.get("id"));
         name = Field.getString(map.get("name"));
         jql = Field.getString(map.get("jql"));
-        owner = Field.getResource(User.class, map.get("owner"), restclient).getName();
+        owner = Field.getResource(User.class, map.get("owner"), restClient).getName();
 
     }
 
