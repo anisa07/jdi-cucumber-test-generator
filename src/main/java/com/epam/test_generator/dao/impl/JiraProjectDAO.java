@@ -1,5 +1,6 @@
 package com.epam.test_generator.dao.impl;
 
+import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.pojo.JiraProject;
 import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
@@ -32,16 +33,17 @@ public class JiraProjectDAO {
         return client.getProjects().stream().map(JiraProject::new).collect(Collectors.toList());
     }
 
-    public List<String> getFilters() throws JiraException {
-        RestClient restclient = client.getRestClient();
+    public List<JiraFilter> getFilters() throws JiraException {
+        final RestClient restclient = client.getRestClient();
         try {
-            URI uri = restclient.buildURI("/rest/api/2/filter/favourite");
-            JSON response = restclient.get(uri);
-            JSONArray filters = JSONArray.fromObject(response);
+            final URI uri = restclient.buildURI("/rest/api/2/filter/favourite");
+            final JSON response = restclient.get(uri);
+            final JSONArray filters = JSONArray.fromObject(response);
 
-            List<String> ret = new ArrayList<>();
+            final List<JiraFilter> ret = new ArrayList<>();
             for(Object filter : filters) {
-                ret.add(filter.toString());
+                final JSONObject jsonFilter = (JSONObject) filter;
+                ret.add(new JiraFilter(restclient, jsonFilter));
             }
             return ret;
         } catch (Exception e) {

@@ -6,6 +6,7 @@ import com.epam.test_generator.dao.impl.JiraStoryDAO;
 import com.epam.test_generator.dao.impl.JiraSubStroryDAO;
 import com.epam.test_generator.dao.interfaces.*;
 import com.epam.test_generator.entities.*;
+import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.pojo.JiraProject;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.pojo.JiraSubTask;
@@ -259,7 +260,7 @@ public class JiraService {
             .collect(Collectors.toList());
     }
 
-    public List<String> getFavoriteFilters() throws JiraException {
+    public List<JiraFilter> getFavoriteFilters() throws JiraException {
         return jiraProjectDAO.getFilters();
     }
 

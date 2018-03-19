@@ -1,5 +1,6 @@
 package com.epam.test_generator.controllers;
 
+import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.pojo.JiraProject;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.services.JiraService;
@@ -37,7 +38,7 @@ public class JiraController {
     @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
     @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
     @RequestMapping(value = "/filters", method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<List<String>> getFavFilters() throws JiraException {
+    public ResponseEntity<List<JiraFilter>> getFavFilters() throws JiraException {
         return new ResponseEntity<>(jiraService.getFavoriteFilters(), HttpStatus.OK);
     }
 
