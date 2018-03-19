@@ -1,9 +1,13 @@
 package com.epam.test_generator.controllers;
 
+import com.epam.test_generator.dao.interfaces.JiraSettingsDAO;
 import com.epam.test_generator.dto.ChangeUserRoleDTO;
+import com.epam.test_generator.dto.JiraSettingsDTO;
 import com.epam.test_generator.dto.ProjectDTO;
 import com.epam.test_generator.dto.UserDTO;
+import com.epam.test_generator.entities.JiraSettings;
 import com.epam.test_generator.services.AdminService;
+import com.epam.test_generator.services.JiraSettingsService;
 import com.epam.test_generator.services.ProjectService;
 import com.epam.test_generator.services.UserService;
 import io.swagger.annotations.ApiImplicitParam;
@@ -39,6 +43,9 @@ public class AdminController {
 
     @Autowired
     private ProjectService projectService;
+
+    @Autowired
+    private JiraSettingsService jiraSettingsService;
 
     @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
     @Secured("ROLE_ADMIN")
@@ -84,5 +91,22 @@ public class AdminController {
     public ResponseEntity<Void> removeProject(@PathVariable("projectId") long projectId) {
         projectService.removeProject(projectId);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @ApiOperation(value = "Create jira settings")
+    @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+    @RequestMapping(value = "admin/jira_settings", method = RequestMethod.POST, consumes = "application/json")
+    public ResponseEntity createJiraSettings(@RequestBody @Valid JiraSettingsDTO jiraSettingsDTO) {
+        jiraSettingsService.createJiraSettings(jiraSettingsDTO);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @ApiOperation(value = "Get jira settings")
+    @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+    @RequestMapping(value = "admin/jira_settings", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<List<JiraSettings>> getJiraSettings() {
+        return new ResponseEntity<>(jiraSettingsService.getJiraSettings(), HttpStatus.OK);
     }
 }
