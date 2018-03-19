@@ -35,6 +35,13 @@ public class JiraController {
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
+    @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+    @RequestMapping(value = "/filters", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<List<String>> getFavFilters() throws JiraException {
+        return new ResponseEntity<>(jiraService.getFavoriteFilters(), HttpStatus.OK);
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
     @ApiImplicitParams({
         @ApiImplicitParam(name = "jiraKey", value = "Key of project", required = true, dataType = "long", paramType = "path"),
         @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
@@ -92,7 +99,5 @@ public class JiraController {
         jiraService.syncToJira();
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
-
 }
 
