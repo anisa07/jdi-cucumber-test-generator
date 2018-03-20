@@ -21,15 +21,11 @@ public class JiraStoryDAO {
     @Autowired
     private SuitDAO suitDAO;
 
-    @Autowired
-    private JiraClient client;
-
-
     private final static String TYPE = "Story";
     private final static Integer MAX_NUMBER_OF_ISSUES = Integer.MAX_VALUE;
     private final static Integer CLOSE_ACTION_ID = 31;
 
-    public JiraStory getStoryByJiraKey(String jiraKey) throws JiraException {
+    public JiraStory getStoryByJiraKey(JiraClient client, String jiraKey) throws JiraException {
 
         return new JiraStory(client.getIssue(jiraKey));
     }
@@ -41,7 +37,7 @@ public class JiraStoryDAO {
      * @param jiraProjectKey
      * @return
      */
-    public List<JiraStory> getStories(String jiraProjectKey) throws JiraException {
+    public List<JiraStory> getStories(JiraClient client, String jiraProjectKey) throws JiraException {
 
         String query = String.format("project=%s AND status in (Open, \"In Progress\", Reopened, Verified) AND type=story", jiraProjectKey);
         List<Issue> issues = client.searchIssues(query, MAX_NUMBER_OF_ISSUES).issues;
@@ -54,7 +50,7 @@ public class JiraStoryDAO {
      * @param projectKey
      * @return
      */
-    public List<JiraStory> getNonexistentStoriesByProject(String projectKey) throws JiraException {
+    public List<JiraStory> getNonexistentStoriesByProject(JiraClient client, String projectKey) throws JiraException {
 
         String query = String.format("project =%s AND status in (Open, \"In Progress\", Reopened, Verified) AND type=story", projectKey);
         SearchResult issues = client.searchIssues(query, MAX_NUMBER_OF_ISSUES);
@@ -64,13 +60,13 @@ public class JiraStoryDAO {
                 .collect(Collectors.toList());
     }
 
-    public List<JiraStory> getJiraStoriesByFilter(String search) throws JiraException {
+    public List<JiraStory> getJiraStoriesByFilter(JiraClient client, String search) throws JiraException {
 
         List<Issue> issues = client.searchIssues(search, MAX_NUMBER_OF_ISSUES).issues;
         return issues.stream().map(JiraStory::new).collect(Collectors.toList());
     }
 
-    public void updateStoryByJiraKey(Suit suit) throws JiraException {
+    public void updateStoryByJiraKey(JiraClient client, Suit suit) throws JiraException {
         client
                 .getIssue(suit.getJiraKey())
                 .update()
@@ -81,7 +77,7 @@ public class JiraStoryDAO {
         suitDAO.save(suit);
     }
 
-    public void closeStoryByJiraKey(String jiraKey) throws JiraException {
+    public void closeStoryByJiraKey(JiraClient client, String jiraKey) throws JiraException {
 
         client
                 .getIssue(jiraKey)
@@ -89,7 +85,7 @@ public class JiraStoryDAO {
                 .execute(CLOSE_ACTION_ID);
     }
 
-    public void createStory(Suit suit) throws JiraException {
+    public void createStory(JiraClient client, Suit suit) throws JiraException {
 
         Issue issue = client
                 .createIssue(suit.getJiraProjectKey(), TYPE)

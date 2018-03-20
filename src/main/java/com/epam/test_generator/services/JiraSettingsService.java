@@ -7,7 +7,6 @@ import com.epam.test_generator.dto.JiraSettingsDTO;
 import com.epam.test_generator.entities.JiraSettings;
 import com.epam.test_generator.services.exceptions.UnauthorizedException;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ public class JiraSettingsService {
             throw new UnauthorizedException(
                 "Jira setting with such login:" + jiraSettingsDTO.getLogin() + " already exist!");
         } else {
-
             final JiraSettings jiraSettings = new JiraSettings(
                 jiraSettingsDTO.getUri(),
                 jiraSettingsDTO.getLogin(),

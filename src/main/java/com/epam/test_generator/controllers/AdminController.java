@@ -1,6 +1,5 @@
 package com.epam.test_generator.controllers;
 
-import com.epam.test_generator.dao.interfaces.JiraSettingsDAO;
 import com.epam.test_generator.dto.ChangeUserRoleDTO;
 import com.epam.test_generator.dto.JiraSettingsDTO;
 import com.epam.test_generator.dto.ProjectDTO;
@@ -15,6 +14,8 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.util.List;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-import java.util.List;
-
 /**
- * Controls performing of administration actions such as change user role or remove project.
- * All included actions require user to have role ADMIN.
+ * Controls performing of administration actions such as change user role or remove project. All
+ * included actions require user to have role ADMIN.
  */
 @RestController
 public class AdminController {
