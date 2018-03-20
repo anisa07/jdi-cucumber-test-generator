@@ -31,6 +31,7 @@ import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -408,7 +409,8 @@ public class JiraService {
         JiraSettings jiraSettings = jiraSettingsDAO.findById(id);
         checkNotNull(jiraSettings);
         BasicCredentials creds = new BasicCredentials(jiraSettings.getLogin(),
-            jiraSettings.getPassword());
+           jiraSettings.getPassword());
+
         return new JiraClient(jiraSettings.getUri(), creds);
     }
 }

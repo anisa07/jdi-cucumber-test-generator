@@ -30,7 +30,7 @@ public class JiraSettingsService {
             final JiraSettings jiraSettings = new JiraSettings(
                 jiraSettingsDTO.getUri(),
                 jiraSettingsDTO.getLogin(),
-                encoder.encode(jiraSettingsDTO.getPassword()));
+                jiraSettingsDTO.getPassword());
             jiraSettingsDAO.save(jiraSettings);
             return jiraSettings;
         }
