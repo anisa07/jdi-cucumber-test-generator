@@ -1,12 +1,21 @@
 package com.epam.test_generator.pojo;
 
-import net.rcarz.jiraclient.*;
-import net.sf.json.JSONObject;
-
 import java.util.Map;
 import java.util.Objects;
+import net.rcarz.jiraclient.Field;
+import net.rcarz.jiraclient.RestClient;
+import net.rcarz.jiraclient.User;
+import net.sf.json.JSONObject;
 
 public class JiraFilter {
+
+    private static final String SELF = "self";
+    private static final String FILTER_ID = "id";
+    private static final String FILTER_NAME = "name";
+    private static final String FILTER_JQL = "jql";
+    private static final String OWNER = "owner";
+
+
     private String self;
     private String id;
     private String name;
@@ -21,11 +30,11 @@ public class JiraFilter {
     private void deserialize(JSONObject jsonObject, RestClient restClient) {
         final Map<?, ?> map = jsonObject;
 
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        name = Field.getString(map.get("name"));
-        jql = Field.getString(map.get("jql"));
-        owner = Field.getResource(User.class, map.get("owner"), restClient).getName();
+        self = Field.getString(map.get(SELF));
+        id = Field.getString(map.get(FILTER_ID));
+        name = Field.getString(map.get(FILTER_NAME));
+        jql = Field.getString(map.get(FILTER_JQL));
+        owner = Field.getResource(User.class, map.get(OWNER), restClient).getName();
 
     }
 

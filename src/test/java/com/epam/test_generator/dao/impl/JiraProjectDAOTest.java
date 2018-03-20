@@ -1,6 +1,12 @@
 package com.epam.test_generator.dao.impl;
 
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+
 import com.epam.test_generator.pojo.JiraProject;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.Project;
@@ -13,17 +19,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-
 @RunWith(MockitoJUnitRunner.class)
 public class JiraProjectDAOTest {
 
     @Mock
     private JiraClient client;
+
+    @Mock
+    private JiraFilterDAO jiraFilterDAO;
 
     @Mock
     private Project project;
@@ -43,8 +46,9 @@ public class JiraProjectDAOTest {
     @Test
     public void getProjectByJiraKey_JiraProject_Success() throws Exception {
         when(client.getProject(anyString())).thenReturn(project);
+        when(jiraFilterDAO.getFilters()).thenReturn(Collections.emptyList());
 
-        JiraProject expectedProject = new JiraProject(project);
+        JiraProject expectedProject = new JiraProject(project, Collections.emptyList());
         JiraProject resultProject = jiraProjectDAO.getProjectByJiraKey(JIRA_KEY);
         Assert.assertEquals(expectedProject, resultProject);
     }
@@ -65,9 +69,12 @@ public class JiraProjectDAOTest {
     @Test
     public void getAllProjects_JiraProjects_Success() throws Exception {
         when(client.getProjects()).thenReturn(Arrays.asList(project));
+        when(jiraFilterDAO.getFilters()).thenReturn(Collections.emptyList());
+
 
         List<JiraProject> resultProjects = jiraProjectDAO.getAllProjects();
-        List<JiraProject> expectedProjects = Arrays.asList(new JiraProject(project));
+        List<JiraProject> expectedProjects = Arrays
+            .asList(new JiraProject(project, Collections.emptyList()));
         Assert.assertEquals(expectedProjects, resultProjects);
     }
 

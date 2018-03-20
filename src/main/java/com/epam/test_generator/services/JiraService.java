@@ -260,10 +260,6 @@ public class JiraService {
             .collect(Collectors.toList());
     }
 
-    public List<JiraFilter> getFavoriteFilters() throws JiraException {
-        return jiraProjectDAO.getFilters();
-    }
-
     /**
      * Synchronisation method from Jira This method receives all related and opened stories and sub
      * stories from Jira and update its in BDD. <p> In case where issue has closed in Jira - the
