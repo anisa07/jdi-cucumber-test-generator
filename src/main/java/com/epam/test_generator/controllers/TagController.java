@@ -6,22 +6,14 @@ import com.epam.test_generator.dto.TagDTO;
 import com.epam.test_generator.dto.ValidationErrorsDTO;
 import com.epam.test_generator.services.CaseService;
 import com.epam.test_generator.services.TagService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.util.Set;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 /**
  * Handle tags for cases and suits.
@@ -34,6 +26,24 @@ public class TagController {
 
     @Autowired
     private CaseService casesService;
+
+    @ApiOperation(value = "Get all tags from project", nickname = "getAllTagsFromProject")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = TagDTO.class, responseContainer = "Set"),
+            @ApiResponse(code = 404, message = "Project not found")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "projectId", value = "ID of project",
+                    required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+    })
+    @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
+    @RequestMapping(value = "/projects/{projectId}/tags",
+            method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<Set<TagDTO>> getAllTagsFromProject(@PathVariable("projectId") long projectId) {
+
+        return new ResponseEntity<>(tagService.getAllTagsFromProject(projectId), HttpStatus.OK);
+    }
 
     @ApiOperation(value = "Get all tags from all cases in suit", nickname = "getAllTagsFromAllCasesInSuit")
     @ApiResponses(value = {

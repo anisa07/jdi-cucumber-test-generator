@@ -35,9 +35,6 @@ public class Project {
     @Column(columnDefinition = "boolean default true", nullable = false)
     private boolean active;
 
-    @OneToMany(cascade = {CascadeType.ALL})
-    private Set<Tag> tags;
-
     public Project() {
     }
 
@@ -85,14 +82,6 @@ public class Project {
 
     public void setSuits(List<Suit> suits) {
         this.suits = suits;
-    }
-
-    public Set<Tag> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<Tag> tags) {
-        this.tags = tags;
     }
 
     public Set<User> getUsers() {
