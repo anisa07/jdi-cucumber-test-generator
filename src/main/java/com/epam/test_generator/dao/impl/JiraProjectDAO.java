@@ -16,7 +16,6 @@ public class JiraProjectDAO {
     }
 
     public List<JiraProject> getAllProjects(JiraClient client) throws JiraException {
-
         return client.getProjects().stream().map(JiraProject::new).collect(Collectors.toList());
     }
 }
