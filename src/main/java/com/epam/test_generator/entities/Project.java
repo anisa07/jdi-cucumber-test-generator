@@ -35,6 +35,9 @@ public class Project {
     @Column(columnDefinition = "boolean default true", nullable = false)
     private boolean active;
 
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Set<Tag> tags;
+
     public Project() {
     }
 
