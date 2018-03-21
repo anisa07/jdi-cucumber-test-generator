@@ -81,25 +81,25 @@ public class StepSuggestionController {
 
     @Deprecated
     @ApiOperation(value = "Get all step suggestions by type",
-            nickname = "getStepsSuggestionsByType")
+        nickname = "getStepsSuggestionsByType")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK",
-                    response = StepSuggestionDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "OK",
+            response = StepSuggestionDTO.class, responseContainer = "List")
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "stepType",
-                    value = "Type of step suggestion that we want to return",
-                    required = true, dataType = "StepType", paramType = "path"),
-            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+        @ApiImplicitParam(name = "stepType",
+            value = "Type of step suggestion that we want to return",
+            required = true, dataType = "StepType", paramType = "path"),
+        @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
     @RequestMapping(value = "/stepSuggestions/{stepType}",
-            method = RequestMethod.GET, produces = "application/json")
+        method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<List<StepSuggestionDTO>> getStepsSuggestionsByType(
-            @PathVariable("stepType") StepType stepType) {
+        @PathVariable("stepType") StepType stepType) {
 
         return new ResponseEntity<>(stepSuggestionService.getStepsSuggestionsByType(stepType),
-                HttpStatus.OK);
+            HttpStatus.OK);
     }
 
     @ApiOperation(value = "Add a new step suggestion", nickname = "addStepSuggestion")
