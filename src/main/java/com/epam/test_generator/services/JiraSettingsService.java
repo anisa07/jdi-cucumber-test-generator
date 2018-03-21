@@ -19,10 +19,7 @@ public class JiraSettingsService {
     @Autowired
     JiraSettingsDAO jiraSettingsDAO;
 
-    @Autowired
-    private PasswordEncoder encoder;
-
-    public JiraSettings createJiraSettings(JiraSettingsDTO jiraSettingsDTO) {
+    public JiraSettings createJiraSettings(JiraSettingsDTO jiraSettingsDTO) throws JiraAuthenticationException {
         if (jiraSettingsDAO.findByLogin(jiraSettingsDTO.getLogin()) != null) {
             throw new JiraAuthenticationException(
                 "Jira setting with such login:" + jiraSettingsDTO.getLogin() + " already exist!");
@@ -40,7 +37,7 @@ public class JiraSettingsService {
         JiraSettings jiraSettings = jiraSettingsDAO.findById(id);
         checkNotNull(jiraSettings);
         jiraSettings.setLogin(jiraSettingsDTO.getLogin());
-        jiraSettings.setPassword( encoder.encode(jiraSettingsDTO.getPassword()));
+        jiraSettings.setPassword( jiraSettingsDTO.getPassword());
         jiraSettings.setUri(jiraSettingsDTO.getUri());
         jiraSettingsDAO.save(jiraSettings);
     }
