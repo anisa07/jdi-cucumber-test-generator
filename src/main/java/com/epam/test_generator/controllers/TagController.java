@@ -27,7 +27,7 @@ public class TagController {
     @Autowired
     private CaseService casesService;
 
-    @ApiOperation(value = "Get all tags from project", nickname = "getAllTagsFromProject")
+    @ApiOperation(value = "Get all tags from project", nickname = "getAllProjectTags")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK", response = TagDTO.class, responseContainer = "Set"),
             @ApiResponse(code = 404, message = "Project not found")
@@ -40,9 +40,9 @@ public class TagController {
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
     @RequestMapping(value = "/projects/{projectId}/tags",
             method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<Set<TagDTO>> getAllTagsFromProject(@PathVariable("projectId") long projectId) {
+    public ResponseEntity<Set<TagDTO>> getAllProjectTags(@PathVariable("projectId") long projectId) {
 
-        return new ResponseEntity<>(tagService.getAllTagsFromProject(projectId), HttpStatus.OK);
+        return new ResponseEntity<>(tagService.getAllProjectTags(projectId), HttpStatus.OK);
     }
 
     @ApiOperation(value = "Get all tags from all cases in suit", nickname = "getAllTagsFromAllCasesInSuit")

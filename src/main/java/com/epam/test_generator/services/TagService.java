@@ -41,7 +41,7 @@ public class TagService {
     private CaseVersionDAO caseVersionDAO;
 
 
-    public Set<TagDTO> getAllTagsFromProject(long projectId) {
+    public Set<TagDTO> getAllProjectTags(long projectId) {
         Set<TagDTO> tagCases = projectService.getProjectByProjectId(projectId).getSuits()
                 .stream()
                 .flatMap(suit -> suit.getCases().stream())
