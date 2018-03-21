@@ -1,5 +1,6 @@
 package com.epam.test_generator.dto;
 
+import com.epam.test_generator.entities.Status;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -37,6 +38,9 @@ public class SuitDTO {
     private String jiraProjectKey;
 
     private String jiraKey;
+
+    @NotNull
+    private Status status;
 
     @NotNull
     @Min(value = 1)
@@ -155,6 +159,14 @@ public class SuitDTO {
         this.rowNumber = rowNumber;
     }
 
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -168,6 +180,7 @@ public class SuitDTO {
 
         return (id != null ? id.equals(suitDTO.id) : suitDTO.id == null)
             && (name != null ? name.equals(suitDTO.name) : suitDTO.name == null)
+            && (status != null ? status.equals(suitDTO.status) : suitDTO.status == null)
             && (description != null ? description.equals(suitDTO.description)
             : suitDTO.description == null)
             && (cases != null ? cases.equals(suitDTO.cases) : suitDTO.cases == null)
@@ -182,6 +195,7 @@ public class SuitDTO {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (cases != null ? cases.hashCode() : 0);
         result = 31 * result + (priority != null ? priority.hashCode() : 0);
         result = 31 * result + (tags != null ? tags.hashCode() : 0);

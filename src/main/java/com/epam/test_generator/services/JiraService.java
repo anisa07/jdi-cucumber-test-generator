@@ -9,6 +9,7 @@ import com.epam.test_generator.entities.*;
 import com.epam.test_generator.pojo.JiraProject;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.pojo.JiraSubTask;
+import java.util.HashMap;
 import net.rcarz.jiraclient.JiraException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -55,6 +56,9 @@ public class JiraService {
     private UserService userService;
 
     private static final Integer FIRST = 0;
+    private final static Integer CLOSE_ACTION_ID = 31;
+    private final static Integer RESOLVE_ACTION_ID = 21;
+    private final static Integer IN_PROGRESS_ACTION_ID = 11;
 
 
     /**
@@ -153,6 +157,7 @@ public class JiraService {
             suit.setPriority(getPriority(jiraStory.getPriority()));
             suit.setLastModifiedDate(LocalDateTime.now());
             suit.setLastJiraSyncDate(suit.getLastModifiedDate());
+            suit.setStatus(getBDDStatus(jiraStory.getStatus()));
             suit = suitDAO.save(suit);
             Project project = projectDAO.findByJiraKey(projectKey);
             checkNotNull(project);
@@ -195,12 +200,26 @@ public class JiraService {
         if (suit == null) {
             return;
         }
-        suit.setName(jiraStory.getName());
-        suit.setDescription(jiraStory.getDescription());
-        suit.setPriority(getPriority(jiraStory.getPriority()));
-        suit.setLastJiraSyncDate(LocalDateTime.now());
-
+        suit.setStatus(getBDDStatus(jiraStory.getStatus()));
         suitDAO.save(suit);
+    }
+
+    private Status getBDDStatus(String jiraStatus) {
+        Status status;
+        switch (jiraStatus) {
+            case "Resolved":
+                status = Status.PASSED;
+                break;
+            case "Open":
+                status = Status.NOT_RUN;
+                break;
+            case "In Progress":
+                status = Status.FAILED;
+                break;
+            default:
+                status = Status.NOT_DONE;
+        }
+        return status;
     }
 
 
@@ -241,7 +260,7 @@ public class JiraService {
                 intPriority = 5;
                 break;
             default:
-                   intPriority = null;
+                intPriority = null;
         }
 
         return intPriority;
@@ -331,7 +350,7 @@ public class JiraService {
 
     private void closeRemovedSuitsInJira() throws JiraException {
         for (RemovedIssue issueToDeleteInJira : removedIssueDAO.findAll()) {
-            jiraStoryDAO.closeStoryByJiraKey(issueToDeleteInJira.getJiraKey());
+            jiraStoryDAO.changeStatusByJiraKey(issueToDeleteInJira.getJiraKey(), CLOSE_ACTION_ID);
             removedIssueDAO.delete(issueToDeleteInJira);
         }
     }
@@ -340,6 +359,24 @@ public class JiraService {
         jiraStoryDAO.createStory(suit);
         for (Case cases : suit.getCases()) {
             jiraSubStoryDAO.createSubStory(cases);
+        }
+    }
+
+    private void updateStoryInJira(Suit suit) throws JiraException {
+        Integer actionId;
+        switch (suit.getStatus()) {
+            case PASSED:
+                actionId = RESOLVE_ACTION_ID;
+                break;
+            case FAILED:
+                actionId = IN_PROGRESS_ACTION_ID;
+                break;
+            default:
+                actionId = null;
+        }
+
+        if (actionId != null) {
+            jiraStoryDAO.changeStatusByJiraKey(suit.getJiraKey(), actionId);
         }
     }
 
@@ -367,10 +404,12 @@ public class JiraService {
     public void syncToJira() throws JiraException {
 
         for (Suit suit : suitDAO.findAll()) {
+            if (suit.getId() == 3)
+                updateStoryInJira(suit);
             if (isSuitJustCreated(suit)) {
                 createStoryWithSubTasksInJira(suit);
             } else if (isSuitChangedAfterLastSync(suit)) {
-                jiraStoryDAO.updateStoryByJiraKey(suit);
+               updateStoryInJira(suit);
             }
 
             for (Case caze : suit.getCases()) {

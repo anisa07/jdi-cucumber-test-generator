@@ -9,10 +9,11 @@ import java.util.*;
 
 
 /**
- * This class represents test suit essence. Test suit is a collection of test cases that are intended to be used
- * for testing software's behaviour. Besides some simple fields like id, name, description, history it consists of
- * tags and cases. List of {@Link Case} represents sequence of test cases that are linked to current {@Link Suit}.
- * List of {@Link Tag} represents types of {@Link Suit} object.
+ * This class represents test suit essence. Test suit is a collection of test cases that are
+ * intended to be used for testing software's behaviour. Besides some simple fields like id, name,
+ * description, history it consists of tags and cases. List of {@Link Case} represents sequence of
+ * test cases that are linked to current {@Link Suit}. List of {@Link Tag} represents types of
+ * {@Link Suit} object.
  */
 @Entity
 public class Suit implements Serializable, Persistable<Long> {
@@ -32,6 +33,9 @@ public class Suit implements Serializable, Persistable<Long> {
     private String jiraKey;
 
     private String jiraProjectKey;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     private LocalDateTime lastModifiedDate;
 
@@ -113,6 +117,14 @@ public class Suit implements Serializable, Persistable<Long> {
         boolean isAllCasesNew = cases == null || cases.stream().allMatch(Case::isNew);
 
         return id == null && isAllTagsWithNullId && isAllCasesNew;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public String getJiraKey() {
@@ -207,6 +219,8 @@ public class Suit implements Serializable, Persistable<Long> {
         this.lastJiraSyncDate = lastJiraSyncDate;
     }
 
+
+
     public Case getCaseById(Long id) {
         Case result = null;
 
@@ -249,6 +263,7 @@ public class Suit implements Serializable, Persistable<Long> {
             Objects.equals(name, suit.name) &&
             Objects.equals(description, suit.description) &&
             Objects.equals(priority, suit.priority) &&
+            Objects.equals(status, suit.status) &&
             Objects.equals(jiraKey, suit.jiraKey) &&
             Objects.equals(jiraProjectKey, suit.jiraProjectKey) &&
             Objects.equals(tags, suit.tags) &&
@@ -260,7 +275,7 @@ public class Suit implements Serializable, Persistable<Long> {
     public int hashCode() {
 
         return Objects
-            .hash(id, name, description, priority, jiraKey, jiraProjectKey, tags,
+            .hash(id, name, description, priority, status, jiraKey, jiraProjectKey, tags,
                 cases,
                 rowNumber);
     }

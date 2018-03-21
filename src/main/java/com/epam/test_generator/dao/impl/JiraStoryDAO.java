@@ -81,12 +81,12 @@ public class JiraStoryDAO {
         suitDAO.save(suit);
     }
 
-    public void closeStoryByJiraKey(String jiraKey) throws JiraException {
 
+    public void changeStatusByJiraKey(String jiraKey, Integer action_id) throws JiraException{
         client
-                .getIssue(jiraKey)
-                .transition()
-                .execute(CLOSE_ACTION_ID);
+            .getIssue(jiraKey)
+            .transition()
+            .execute(action_id);
     }
 
     public void createStory(Suit suit) throws JiraException {

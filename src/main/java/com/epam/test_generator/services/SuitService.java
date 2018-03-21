@@ -216,6 +216,7 @@ public class SuitService {
         snapShot.setDescription(suitDTO.getDescription());
         snapShot.setPriority(suitDTO.getPriority());
         snapShot.setTags(suitDTO.getTags());
+        snapShot.setStatus(suitDTO.getStatus());
         snapShot.setCreationDate(suitDTO.getCreationDate());
         snapShot.setRowNumber(suitDTO.getRowNumber());
         return snapShot;
