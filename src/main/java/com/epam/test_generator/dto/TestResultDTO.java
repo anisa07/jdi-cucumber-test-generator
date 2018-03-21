@@ -1,14 +1,12 @@
 package com.epam.test_generator.dto;
 
 import com.epam.test_generator.entities.Status;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.util.Date;
 import java.util.List;
 
 public class TestResultDTO {
 
-    @JsonFormat(pattern = "yyyy-MM-dd@HH:mm:ss")
     private Date date;
 
     private long duration;

@@ -1,7 +1,6 @@
 package com.epam.test_generator.dto;
 
 import com.epam.test_generator.entities.Status;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -28,10 +27,8 @@ public class CaseDTO {
     @Valid
     private List<StepDTO> steps;
 
-    @JsonFormat(pattern = "yyyy-MM-dd@HH:mm:ss")
     private Date creationDate;
 
-    @JsonFormat(pattern = "yyyy-MM-dd@HH:mm:ss")
     private Date updateDate;
 
     @NotNull
