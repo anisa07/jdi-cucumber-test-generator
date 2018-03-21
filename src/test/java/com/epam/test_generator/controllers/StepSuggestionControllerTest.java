@@ -35,6 +35,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 public class StepSuggestionControllerTest {
 
     private static final long SIMPLE_AUTOCOMPLETE_ID = 1L;
+    public static final int PAGE_NUMBER = 1;
+    public static final int PAGE_SIZE = 2;
     private static final StepType STEP_TYPE = StepType.GIVEN;
     private ObjectMapper mapper = new ObjectMapper();
     private MockMvc mockMvc;
@@ -78,6 +80,50 @@ public class StepSuggestionControllerTest {
             .andExpect(status().isInternalServerError());
 
         verify(stepSuggestionService).getStepsSuggestions();
+    }
+
+    @Test
+    public void getSuggestionsPage_StepsSuggestion_StatusOk() throws Exception {
+        when(stepSuggestionService.getStepsSuggestions(PAGE_NUMBER, PAGE_SIZE)).thenReturn(stepSuggestionDTOS);
+
+        mockMvc.perform(get("/stepSuggestions/page/" + PAGE_NUMBER + "/size/" + PAGE_SIZE))
+                .andExpect(status().isOk());
+
+        verify(stepSuggestionService).getStepsSuggestions(PAGE_NUMBER, PAGE_SIZE);
+    }
+
+    @Test
+    public void getSuggestionsPage_ThrowRuntimeException_StatusInternalServerError()
+            throws Exception {
+        when(stepSuggestionService.getStepsSuggestions(PAGE_NUMBER, PAGE_SIZE)).thenThrow(new RuntimeException());
+
+        mockMvc.perform(get("/stepSuggestions/page/" + PAGE_NUMBER + "/size/" + PAGE_SIZE))
+                .andExpect(status().isInternalServerError());
+
+        verify(stepSuggestionService).getStepsSuggestions(PAGE_NUMBER, PAGE_SIZE);
+    }
+
+    @Test
+    public void getStepsSuggestionsPageByType_StepsSuggestion_StatusOk() throws Exception {
+        when(stepSuggestionService.getStepsSuggestionsByType(STEP_TYPE, PAGE_NUMBER, PAGE_SIZE)).thenReturn
+                (stepSuggestionDTOS);
+
+        mockMvc.perform(get("/stepSuggestions/" + STEP_TYPE + "/page/" + PAGE_NUMBER + "/size/" + PAGE_SIZE))
+                .andExpect(status().isOk());
+
+        verify(stepSuggestionService).getStepsSuggestionsByType(eq(STEP_TYPE), eq(PAGE_NUMBER), eq(PAGE_SIZE));
+    }
+
+    @Test
+    public void getStepsSuggestionsPageByType_ThrowRuntimeException_StatusInternalServerError()
+            throws Exception {
+        when(stepSuggestionService.getStepsSuggestionsByType(STEP_TYPE, PAGE_NUMBER, PAGE_SIZE))
+                .thenThrow(new RuntimeException());
+
+        mockMvc.perform(get("/stepSuggestions/" + STEP_TYPE + "/page/" + PAGE_NUMBER + "/size/" + PAGE_SIZE))
+                .andExpect(status().isInternalServerError());
+
+        verify(stepSuggestionService).getStepsSuggestionsByType(eq(STEP_TYPE), eq(PAGE_NUMBER), eq(PAGE_SIZE));
     }
 
     @Test

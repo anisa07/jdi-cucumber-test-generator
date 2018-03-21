@@ -44,6 +44,54 @@ public class StepSuggestionController {
         return new ResponseEntity<>(stepSuggestionService.getStepsSuggestions(), HttpStatus.OK);
     }
 
+    @ApiOperation(value = "Get page of step suggestions", nickname = "getStepsSuggestions")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = StepSuggestionDTO.class,
+                    responseContainer = "List")
+    })
+    @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
+    @RequestMapping(value = "/stepSuggestions/page/{pageNumber}/size/{pageSize}", method = RequestMethod.GET,
+            produces = "application/json")
+    @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+    public ResponseEntity<List<StepSuggestionDTO>> getStepsSuggestions(@PathVariable int pageNumber, @PathVariable int pageSize) {
+
+        return new ResponseEntity<>(stepSuggestionService.getStepsSuggestions(pageNumber, pageSize), HttpStatus.OK);
+    }
+
+    @ApiOperation(
+            value = "Get page of step suggestions for an appropriate type",
+            nickname = "getStepsSuggestionsByType")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    code = 200,
+                    message = "OK",
+                    response = StepSuggestionDTO.class,
+                    responseContainer = "List")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "stepType",
+                    value = "Type of step suggestion that we want to return",
+                    required = true,
+                    dataType = "StepType",
+                    paramType = "path"),
+            @ApiImplicitParam(
+                    name = "Authorization",
+                    value = "add here your token",
+                    paramType = "header",
+                    dataType = "string",
+                    required = true)
+    })
+    @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
+    @RequestMapping(value = "/stepSuggestions/{stepType}/page/{pageNumber}/size/{pageSize}",
+            method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<List<StepSuggestionDTO>> getStepsSuggestionsByType(
+            @PathVariable("stepType") StepType stepType, @PathVariable int pageNumber, @PathVariable int pageSize) {
+
+        return new ResponseEntity<>(stepSuggestionService.getStepsSuggestionsByType(stepType, pageNumber, pageSize),
+                HttpStatus.OK);
+    }
+
     @ApiOperation(value = "Get all step suggestions by type",
         nickname = "getStepsSuggestionsByType")
     @ApiResponses(value = {

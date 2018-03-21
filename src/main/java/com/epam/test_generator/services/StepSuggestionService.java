@@ -13,6 +13,9 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,11 +34,26 @@ public class StepSuggestionService {
         return stepSuggestionTransformer.toDtoList(stepSuggestionDAO.findAll());
     }
 
+    public List<StepSuggestionDTO> getStepsSuggestions(int pageNumber, int pageSize) {
+        Pageable request = new PageRequest(pageNumber - 1, pageSize, Sort.Direction.ASC, "id");
+
+        return stepSuggestionTransformer.toDtoList(stepSuggestionDAO.findAll(request).getContent());
+    }
+
     public StepSuggestionDTO getStepsSuggestion(long stepSuggestionId) {
         StepSuggestion stepSuggestion = stepSuggestionDAO.findOne(stepSuggestionId);
         checkNotNull(stepSuggestion);
 
         return stepSuggestionTransformer.toDto(stepSuggestion);
+    }
+
+    public List<StepSuggestionDTO> getStepsSuggestionsByType(StepType stepType, int pageNumber, int pageSize) {
+        Pageable request = new PageRequest(pageNumber - 1, pageSize, Sort.Direction.ASC, "id");
+
+        return stepSuggestionTransformer.toDtoList(
+                stepSuggestionDAO.findAll(request).getContent().stream()
+                        .filter(s -> s.getType() == stepType)
+                        .collect(Collectors.toList()));
     }
 
     public List<StepSuggestionDTO> getStepsSuggestionsByType(StepType stepType) {
