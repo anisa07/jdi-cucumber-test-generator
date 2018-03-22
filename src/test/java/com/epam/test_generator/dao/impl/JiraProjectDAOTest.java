@@ -4,6 +4,7 @@ import com.epam.test_generator.dao.interfaces.JiraSettingsDAO;
 import com.epam.test_generator.entities.JiraSettings;
 import com.epam.test_generator.entities.factory.JiraClientFactory;
 import com.epam.test_generator.pojo.JiraProject;
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.Project;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Matchers.anyLong;
@@ -28,6 +30,9 @@ public class JiraProjectDAOTest {
 
     @Mock
     private JiraClient client;
+
+    @Mock
+    private JiraFilterDAO jiraFilterDAO;
 
     @Mock
     private Project project;
@@ -61,20 +66,21 @@ public class JiraProjectDAOTest {
     @Test
     public void getProjectByJiraKey_JiraProject_Success() throws Exception {
         when(client.getProject(anyString())).thenReturn(project);
+        when(jiraFilterDAO.getFilters()).thenReturn(Collections.emptyList());
 
-        JiraProject expectedProject = new JiraProject(project);
+        JiraProject expectedProject = new JiraProject(project, Collections.emptyList());
         JiraProject resultProject = jiraProjectDAO.getProjectByJiraKey(JIRA_SETTINGS_ID, JIRA_KEY);
         Assert.assertEquals(expectedProject, resultProject);
     }
 
-    @Test(expected = JiraException.class)
+    @Test(expected = JiraRuntimeException.class)
     public void getProjectByUnvalidJiraKey_JiraProject_MalformedParametersException() throws Exception {
-      when(client.getProject(anyString())).thenThrow(new JiraException("a"));
+        when(client.getProject(anyString())).thenThrow(new JiraRuntimeException("a"));
       jiraProjectDAO.getProjectByJiraKey(JIRA_SETTINGS_ID, JIRA_KEY);
     }
 
-    @Test(expected = JiraException.class)
-    public void getNonexistentProjectByJadaKey_JadaProject_Success() throws JiraException {
+    @Test(expected = JiraRuntimeException.class)
+    public void getNonexistentProjectByJadaKey_JadaProject_Success() throws Exception {
       when(client.getProject(anyString())).thenThrow(new JiraException("a",new RestException("a",404,"bad")));
       JiraProject key = jiraProjectDAO.getProjectByJiraKey(JIRA_SETTINGS_ID, JIRA_KEY);
       Assert.assertNull(key);
@@ -83,9 +89,12 @@ public class JiraProjectDAOTest {
     @Test
     public void getAllProjects_JiraProjects_Success() throws Exception {
         when(client.getProjects()).thenReturn(Arrays.asList(project));
+        when(jiraFilterDAO.getFilters()).thenReturn(Collections.emptyList());
+
 
         List<JiraProject> resultProjects = jiraProjectDAO.getAllProjects(JIRA_SETTINGS_ID);
-        List<JiraProject> expectedProjects = Arrays.asList(new JiraProject(project));
+        List<JiraProject> expectedProjects = Arrays
+                .asList(new JiraProject(project, Collections.emptyList()));
         Assert.assertEquals(expectedProjects, resultProjects);
     }
 

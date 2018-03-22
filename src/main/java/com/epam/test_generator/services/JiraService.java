@@ -1,41 +1,28 @@
 package com.epam.test_generator.services;
 
-import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
-
 import com.epam.test_generator.config.security.AuthenticatedUser;
 import com.epam.test_generator.dao.impl.JiraProjectDAO;
 import com.epam.test_generator.dao.impl.JiraStoryDAO;
 import com.epam.test_generator.dao.impl.JiraSubStroryDAO;
-import com.epam.test_generator.dao.interfaces.CaseDAO;
-import com.epam.test_generator.dao.interfaces.JiraSettingsDAO;
-import com.epam.test_generator.dao.interfaces.ProjectDAO;
-import com.epam.test_generator.dao.interfaces.RemovedIssueDAO;
-import com.epam.test_generator.dao.interfaces.SuitDAO;
-import com.epam.test_generator.dao.interfaces.SuitVersionDAO;
-import com.epam.test_generator.dao.interfaces.UserDAO;
-import com.epam.test_generator.entities.Case;
-import com.epam.test_generator.entities.Project;
-import com.epam.test_generator.entities.RemovedIssue;
-import com.epam.test_generator.entities.Status;
-import com.epam.test_generator.entities.Suit;
-import com.epam.test_generator.entities.User;
-import com.epam.test_generator.pojo.JiraProject;
-import com.epam.test_generator.pojo.JiraStatus;
-import com.epam.test_generator.pojo.JiraStory;
-import com.epam.test_generator.pojo.JiraSubTask;
-import com.epam.test_generator.pojo.PropertyDifference;
-import com.epam.test_generator.pojo.SuitVersion;
+import com.epam.test_generator.dao.interfaces.*;
+import com.epam.test_generator.dto.ProjectDTO;
+import com.epam.test_generator.entities.*;
+import com.epam.test_generator.pojo.*;
+import com.epam.test_generator.transformers.ProjectTransformer;
+import net.rcarz.jiraclient.JiraException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.stream.Collectors;
-import net.rcarz.jiraclient.JiraException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
 
 @Service
 @Transactional
@@ -60,7 +47,7 @@ public class JiraService {
     private CaseDAO caseDAO;
 
     @Autowired
-    private UserDAO userDAO;
+    private ProjectTransformer projectTransformer;
 
     @Autowired
     private RemovedIssueDAO removedIssueDAO;
@@ -83,16 +70,34 @@ public class JiraService {
      *
      * @param stories collection of Jira stories
      */
-    public void createProjectWithAttachments(Long clientId, List<JiraStory> stories,
-                                             Authentication auth)
-        throws JiraException {
+    public Project createProjectWithAttachments(Long clientId, List<JiraStory> stories,
+                                                Authentication auth) {
         if (!stories.isEmpty()) {
             String projectKey = stories.get(FIRST).getJiraProjectKey();
             JiraProject projectByJiraKey = jiraProjectDAO
-                .getProjectByJiraKey(clientId, projectKey);
+                    .getProjectByJiraKey(clientId, projectKey);
             createProjectFromJiraProject(projectByJiraKey, auth);
             addStoriesToExistedProject(clientId, stories, projectKey);
         }
+        final String projectKey = stories.get(FIRST).getJiraProjectKey();
+        final JiraProject projectByJiraKey = jiraProjectDAO.getProjectByJiraKey(projectKey);
+        return createProjectFromJiraProject(projectByJiraKey, auth, stories);
+    }
+        return null;
+}
+
+    public ProjectDTO createProjectWithAttachedFilters(List<JiraFilter> jiraFilters,
+                                                       Authentication auth) {
+        return projectTransformer
+                .toDto(createProjectWithAttachments(findStoriesByFilters(jiraFilters), auth));
+    }
+
+    private List<JiraStory> findStoriesByFilters(List<JiraFilter> jiraFilters) {
+        return jiraFilters.stream()
+                .map(JiraFilter::getJql)
+                .flatMap(jql -> jiraStoryDAO.getJiraStoriesByFilter(jql).stream())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     /**
@@ -101,24 +106,16 @@ public class JiraService {
      *
      * @param stories collection of Jira stories
      */
-    public void addStoriesToExistedProject(Long clientId, List<JiraStory> stories,
-                                           String projectKey)
-        throws JiraException {
+    public Project addStoriesToExistedProject(Long clientId, List<JiraStory> stories, String projectKey) {
+        final Project project = checkNotNull(projectDAO.findByJiraKey(projectKey));
+        project.getSuits().addAll(mapJiraStoriesToSuits(stories));
+        return projectDAO.save(project);
+    }
 
-        for (JiraStory story : stories) {
-            createSuitFromJiraStory(story, projectKey);
-        }
-        String query = String.format(
-            "project=%s AND status in (Open, \"In Progress\", Reopened, Verified) AND type=sub-task",
-            stories.get(FIRST).getJiraProjectKey());
-
-        List<JiraSubTask> jiraSubTasks = jiraSubStoryDAO
-            .getJiraSubtoriesByFilter(clientId, query);
-
-        jiraSubTasks.stream()
-            .filter(subTask -> suitDAO.findByJiraKey(subTask.getJiraParentKey()) != null)
-            .filter(subTask -> caseDAO.findByJiraKey(subTask.getJiraKey()) == null)
-            .forEach(this::createCaseFromJiraSubTask);
+    private List<Suit> mapJiraStoriesToSuits(List<JiraStory> stories) {
+        return stories.stream()
+                .map(this::createSuitFromJiraStory)
+                .collect(Collectors.toList());
     }
 
 
@@ -135,7 +132,7 @@ public class JiraService {
      * @return collection of Jira stories
      */
     public List<JiraStory> getJiraStoriesFromJiraProjectByProjectId(Long clientId, String jiraKey)
-        throws JiraException {
+            throws JiraException {
         return jiraStoryDAO.getNonexistentStoriesByProject(clientId, jiraKey);
     }
 
@@ -144,17 +141,19 @@ public class JiraService {
      *
      * @param jiraProject - new project from Jira
      */
-    private void createProjectFromJiraProject(JiraProject jiraProject, Authentication auth) {
-        Project project = new Project();
+    private Project createProjectFromJiraProject(JiraProject jiraProject, Authentication auth, List<JiraStory> stories) {
+        final User user = userService.getUserByEmail(((AuthenticatedUser) auth.getPrincipal()).getEmail());
+
+        final Project project = new Project();
+
         project.setName(jiraProject.getName());
         project.setDescription(jiraProject.getDescription());
         project.setJiraKey(jiraProject.getJiraKey());
         project.setActive(true);
-        AuthenticatedUser userDetails = (AuthenticatedUser) auth.getPrincipal();
-        User user = userService.getUserByEmail(userDetails.getEmail());
         project.setUsers(Collections.singleton(user));
+        project.getSuits().addAll(mapJiraStoriesToSuits(stories));
 
-        projectDAO.save(project);
+        return projectDAO.save(project);
     }
 
 
@@ -163,27 +162,17 @@ public class JiraService {
      *
      * @param jiraStory - new story from Jira
      */
-    private void createSuitFromJiraStory(JiraStory jiraStory, String projectKey)
-        throws JiraException {
-        if (!jiraStory.getJiraProjectKey().equals(projectKey)) {
-            throw new JiraException("Jira Story is not from required jira Project!");
-        } else {
-
-            Suit suit = new Suit();
-            suit.setName(jiraStory.getName());
-            suit.setDescription(jiraStory.getDescription());
-            suit.setJiraKey(jiraStory.getJiraKey());
-            suit.setJiraProjectKey(jiraStory.getJiraProjectKey());
-            suit.setPriority(getPriority(jiraStory.getPriority()));
-            suit.setLastModifiedDate(LocalDateTime.now());
-            suit.setLastJiraSyncDate(suit.getLastModifiedDate());
-            suit.setStatus(getBDDStatus(jiraStory.getStatus()));
-            suit = suitDAO.save(suit);
-            Project project = projectDAO.findByJiraKey(projectKey);
-            checkNotNull(project);
-
-            project.getSuits().add(suit);
-        }
+    private Suit createSuitFromJiraStory(JiraStory jiraStory) {
+        final Suit suit = new Suit();
+        suit.setName(jiraStory.getName());
+        suit.setDescription(jiraStory.getDescription());
+        suit.setJiraKey(jiraStory.getJiraKey());
+        suit.setJiraProjectKey(jiraStory.getJiraProjectKey());
+        suit.setPriority(getPriority(jiraStory.getPriority()));
+        suit.setLastModifiedDate(LocalDateTime.now());
+        suit.setLastJiraSyncDate(suit.getLastModifiedDate());
+        suit.setStatus(getBDDStatus(jiraStory.getStatus()));
+        return suit;
     }
 
     /**
@@ -287,8 +276,8 @@ public class JiraService {
      */
     public List<JiraProject> getNonexistentJiraProjects(Long clientId) throws JiraException {
         return jiraProjectDAO.getAllProjects(clientId).stream()
-            .filter(project -> projectDAO.findByJiraKey(project.getJiraKey()) == null)
-            .collect(Collectors.toList());
+                .filter(project -> projectDAO.findByJiraKey(project.getJiraKey()) == null)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -300,13 +289,13 @@ public class JiraService {
 
     private String generateQueryForSelectProjectsStories(String type) {
         String projects = projectDAO.findAll().stream()
-            .filter(p -> p.getJiraKey() != null)
-            .map(Project::getJiraKey)
-            .collect(Collectors.joining(","));
+                .filter(p -> p.getJiraKey() != null)
+                .map(Project::getJiraKey)
+                .collect(Collectors.joining(","));
 
         return String.format(
-            "project in (%s) AND status in (Open, \"In Progress\", Reopened, Verified) AND type=%s",
-            projects, type);
+                "project in (%s) AND status in (Open, \"In Progress\", Reopened, Verified) AND type=%s",
+                projects, type);
 
     }
 
@@ -330,33 +319,33 @@ public class JiraService {
         }
     }
 
-    public void syncFromJira(Long clientId) throws JiraException {
+    public void syncFromJira(Long clientId) {
         String storyQuery = generateQueryForSelectProjectsStories("story");
         String subtaskQuery = generateQueryForSelectProjectsStories("sub-task");
 
         List<JiraStory> jiraStories = jiraStoryDAO.getJiraStoriesByFilter(clientId, storyQuery);
         List<JiraSubTask> jiraSubTasks = jiraSubStoryDAO
-            .getJiraSubtoriesByFilter(clientId, subtaskQuery);
+                .getJiraSubtoriesByFilter(clientId, subtaskQuery);
 
         jiraStories.forEach(this::updateSuitFromJiraStory);
 
         jiraSubTasks.stream()
-            .filter(subTask -> suitDAO.findByJiraKey(subTask.getJiraParentKey()) != null)
-            .forEach(this::syncCaseByJiraSubtask);
+                .filter(subTask -> suitDAO.findByJiraKey(subTask.getJiraParentKey()) != null)
+                .forEach(this::syncCaseByJiraSubtask);
 
         Map<String, Suit> suitsToBeDeleted = suitDAO.findAll().stream()
-            .filter(suit ->
-                jiraStories.stream()
-                    .filter(jiraStory -> jiraStory.getJiraKey() != null)
-                    .noneMatch(jiraStory -> jiraStory.getJiraKey().equals(suit.getJiraKey())))
-            .collect(Collectors.toMap(Suit::getJiraKey, suit -> suit));
+                .filter(suit ->
+                        jiraStories.stream()
+                                .filter(jiraStory -> jiraStory.getJiraKey() != null)
+                                .noneMatch(jiraStory -> jiraStory.getJiraKey().equals(suit.getJiraKey())))
+                .collect(Collectors.toMap(Suit::getJiraKey, suit -> suit));
 
         Map<String, Case> casesToBeDeleted = caseDAO.findAll().stream()
-            .filter(caze ->
-                jiraSubTasks.stream()
-                    .filter(jiraSubTask -> jiraSubTask.getJiraKey() != null)
-                    .noneMatch(jiraSubTask -> jiraSubTask.getJiraKey().equals(caze.getJiraKey())))
-            .collect(Collectors.toMap(Case::getJiraKey, caze -> caze));
+                .filter(caze ->
+                        jiraSubTasks.stream()
+                                .filter(jiraSubTask -> jiraSubTask.getJiraKey() != null)
+                                .noneMatch(jiraSubTask -> jiraSubTask.getJiraKey().equals(caze.getJiraKey())))
+                .collect(Collectors.toMap(Case::getJiraKey, caze -> caze));
 
         removeSuitsAndCasesFromBDD(suitsToBeDeleted, casesToBeDeleted);
     }
@@ -365,7 +354,7 @@ public class JiraService {
     private void closeRemovedSuitsInJira(Long clientId) throws JiraException {
         for (RemovedIssue issueToDeleteInJira : removedIssueDAO.findAll()) {
             jiraStoryDAO.changeStatusByJiraKey(clientId, issueToDeleteInJira.getJiraKey(),
-                JiraStatus.CLOSED.getActionId());
+                    JiraStatus.CLOSED.getActionId());
             removedIssueDAO.delete(issueToDeleteInJira);
         }
     }
@@ -400,7 +389,7 @@ public class JiraService {
                 while (iterator.hasPrevious()) {
                     SuitVersion suitVersion = iterator.previous();
                     List<PropertyDifference> propertyDifferences = suitVersion
-                        .getPropertyDifferences();
+                            .getPropertyDifferences();
                     Status previousStatus = getStatusFromPropertyDiff(propertyDifferences);
                     if (!suit.getStatus().equals(previousStatus) && previousStatus != null) {
                         if (previousStatus.equals(Status.PASSED)) {

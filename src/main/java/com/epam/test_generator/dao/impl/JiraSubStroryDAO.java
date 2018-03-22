@@ -4,13 +4,16 @@ import com.epam.test_generator.dao.interfaces.CaseDAO;
 import com.epam.test_generator.entities.Case;
 import com.epam.test_generator.entities.factory.JiraClientFactory;
 import com.epam.test_generator.pojo.JiraSubTask;
-import net.rcarz.jiraclient.*;
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
+import net.rcarz.jiraclient.Field;
+import net.rcarz.jiraclient.Issue;
+import net.rcarz.jiraclient.JiraException;
+import net.rcarz.jiraclient.RestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,10 +35,7 @@ public class JiraSubStroryDAO {
         return new JiraSubTask(jiraClientFactory.getJiraClient(clientId).getIssue(jiraKey));
     }
 
-    public List<JiraSubTask> getJiraSubtoriesByFilter(Long clientId, String search)
-        throws JiraException {
-        List<JiraSubTask> jiraStories = new ArrayList<>();
-
+    public List<JiraSubTask> getJiraSubtoriesByFilter(Long clientId, String search) {
         try {
             List<Issue> issues = jiraClientFactory.getJiraClient(clientId)
                 .searchIssues(search, MAX_NUMBER_OF_ISSUES).issues;
@@ -48,7 +48,7 @@ public class JiraSubStroryDAO {
                     return Collections.emptyList();
                 }
             }
-            throw e;
+            throw new JiraRuntimeException(e.getMessage(), e);
         }
     }
 

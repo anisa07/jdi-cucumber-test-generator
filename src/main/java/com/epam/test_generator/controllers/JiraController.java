@@ -1,5 +1,7 @@
 package com.epam.test_generator.controllers;
 
+import com.epam.test_generator.dto.ProjectDTO;
+import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.pojo.JiraProject;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.services.JiraService;
@@ -64,6 +66,19 @@ public class JiraController {
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
+    @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header",
+            dataType = "string", required = true)
+    @RequestMapping(value = "/projectByFilters", method = RequestMethod.POST, consumes = "application/json")
+    public ResponseEntity<ProjectDTO> createProjectByFilters(
+            @RequestBody() List<JiraFilter> jiraFilters, Authentication auth) {
+
+        return new ResponseEntity<>
+                (jiraService.createProjectWithAttachedFilters(jiraFilters, auth), HttpStatus.OK);
+    }
+
+
+
+    @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
     @ApiImplicitParams({
         @ApiImplicitParam(name = "jiraKey", value = "Key of project", required = true, dataType = "long", paramType = "path"),
         @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
@@ -98,7 +113,5 @@ public class JiraController {
         jiraService.syncToJira(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
-
 }
 

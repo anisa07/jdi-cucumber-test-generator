@@ -4,15 +4,17 @@ import com.epam.test_generator.dao.interfaces.SuitDAO;
 import com.epam.test_generator.entities.Suit;
 import com.epam.test_generator.entities.factory.JiraClientFactory;
 import com.epam.test_generator.pojo.JiraStory;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.Issue;
 import net.rcarz.jiraclient.Issue.SearchResult;
 import net.rcarz.jiraclient.JiraException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JiraStoryDAO {
@@ -63,11 +65,15 @@ public class JiraStoryDAO {
             .collect(Collectors.toList());
     }
 
-    public List<JiraStory> getJiraStoriesByFilter(Long clientId, String search)
-        throws JiraException {
+    public List<JiraStory> getJiraStoriesByFilter(Long clientId, String search) {
 
-        List<Issue> issues = jiraClientFactory.getJiraClient(clientId)
-            .searchIssues(search, MAX_NUMBER_OF_ISSUES).issues;
+        List<Issue> issues;
+        try {
+            issues = jiraClientFactory.getJiraClient(clientId)
+                    .searchIssues(search, MAX_NUMBER_OF_ISSUES).issues;
+        } catch (JiraException e) {
+            throw new JiraRuntimeException(e.getMessage(), e);
+        }
         return issues.stream().map(JiraStory::new).collect(Collectors.toList());
     }
 

@@ -5,6 +5,7 @@ import com.epam.test_generator.entities.Case;
 import com.epam.test_generator.entities.JiraSettings;
 import com.epam.test_generator.entities.factory.JiraClientFactory;
 import com.epam.test_generator.pojo.JiraSubTask;
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import net.rcarz.jiraclient.Issue;
 import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
@@ -20,9 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,7 +52,7 @@ public class JiraSubStroryDAOTest {
     private static final Long JIRA_SETTINGS_ID = 1L;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp()  {
         when(jiraClientFactory.getJiraClient(anyLong())).thenReturn(client);
         jiraSettings = new JiraSettings();
         jiraSettings.setLogin("login");
@@ -78,8 +77,8 @@ public class JiraSubStroryDAOTest {
     }
 
     @Test(expected = JiraException.class)
-    public void getUnexistedSubStoryByJiraKey_JiraSubtask_Null() throws Exception{
-        when(client.getIssue(anyString())).thenThrow(new JiraException("", new RestException("",404,"")));
+    public void getUnexistedSubStoryByJiraKey_JiraSubtask_Null() throws Exception {
+        when(client.getIssue(anyString())).thenThrow(new JiraException("", new RestException("", 404, "")));
         JiraSubTask subTask = jiraSubStroryDAO.getSubStoryByJiraKey(JIRA_SETTINGS_ID, JIRA_KEY);
         Assert.assertNull(subTask);
     }
@@ -96,7 +95,7 @@ public class JiraSubStroryDAOTest {
         Assert.assertEquals(expectedStories, resultStories);
     }
 
-    @Test(expected = JiraException.class)
+    @Test(expected = JiraRuntimeException.class)
     public void getJiraSubtoriesByInvalidFilter_JiraSubTasks_MalformedParametersException() throws Exception {
         when(client.searchIssues(anyString(), anyInt())).thenThrow(new JiraException("a"));
         jiraSubStroryDAO.getJiraSubtoriesByFilter(JIRA_SETTINGS_ID, JIRA_FILTER);
@@ -118,7 +117,7 @@ public class JiraSubStroryDAOTest {
 
     @Test(expected = JiraException.class)
     public void createSubStory() throws JiraException {
-        when(client.createIssue(anyString(),anyString())).thenCallRealMethod();
+        when(client.createIssue(anyString(), anyString())).thenCallRealMethod();
         jiraSubStroryDAO.createSubStory(JIRA_SETTINGS_ID, caze);
     }
 }
