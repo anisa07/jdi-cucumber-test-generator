@@ -2,6 +2,7 @@ package com.epam.test_generator.dao.impl;
 
 import com.epam.test_generator.entities.Case;
 import com.epam.test_generator.pojo.JiraSubTask;
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import net.rcarz.jiraclient.Issue;
 import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
@@ -40,7 +41,8 @@ public class JiraSubStroryDAOTest {
     private static final String JIRA_FILTER = "filter";
 
     @Before
-    public void setUp() throws Exception { }
+    public void setUp() throws Exception {
+    }
 
     @Test
     public void getSubStoryByJiraKey_JiraSubTask_Success() throws Exception {
@@ -58,8 +60,8 @@ public class JiraSubStroryDAOTest {
     }
 
     @Test(expected = JiraException.class)
-    public void getUnexistedSubStoryByJiraKey_JiraSubtask_Null() throws Exception{
-        when(client.getIssue(anyString())).thenThrow(new JiraException("", new RestException("",404,"")));
+    public void getUnexistedSubStoryByJiraKey_JiraSubtask_Null() throws Exception {
+        when(client.getIssue(anyString())).thenThrow(new JiraException("", new RestException("", 404, "")));
         JiraSubTask subTask = jiraSubStroryDAO.getSubStoryByJiraKey(JIRA_KEY);
         Assert.assertNull(subTask);
     }
@@ -76,7 +78,7 @@ public class JiraSubStroryDAOTest {
         Assert.assertEquals(expectedStories, resultStories);
     }
 
-    @Test(expected = JiraException.class)
+    @Test(expected = JiraRuntimeException.class)
     public void getJiraSubtoriesByInvalidFilter_JiraSubTasks_MalformedParametersException() throws Exception {
         when(client.searchIssues(anyString(), anyInt())).thenThrow(new JiraException("a"));
         jiraSubStroryDAO.getJiraSubtoriesByFilter(JIRA_FILTER);
@@ -98,7 +100,7 @@ public class JiraSubStroryDAOTest {
 
     @Test(expected = JiraException.class)
     public void createSubStory() throws JiraException {
-        when(client.createIssue(anyString(),anyString())).thenCallRealMethod();
+        when(client.createIssue(anyString(), anyString())).thenCallRealMethod();
         jiraSubStroryDAO.createSubStory(caze);
     }
 }

@@ -158,8 +158,6 @@ public class JiraServiceTest {
         jiraService.createProjectWithAttachments(Collections.singletonList(jiraStory),authentication);
 
         verify(projectDAO).save(any(Project.class));
-        verify(suitDAO).save(any(Suit.class));
-        verify(caseDAO).save(any(Case.class));
     }
 
     @Test
@@ -173,8 +171,7 @@ public class JiraServiceTest {
 
         jiraService.addStoriesToExistedProject(Collections.singletonList(jiraStory), JIRA_PROJECT_KEY);
 
-        verify(suitDAO).save(any(Suit.class));
-        verify(caseDAO).save(any(Case.class));
+        verify(projectDAO).save(any(Project.class));
     }
 
     @Test

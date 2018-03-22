@@ -2,6 +2,7 @@ package com.epam.test_generator.dao.impl;
 
 import com.epam.test_generator.entities.Suit;
 import com.epam.test_generator.pojo.JiraStory;
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import net.rcarz.jiraclient.Issue;
 import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
@@ -35,14 +36,14 @@ public class JiraStoryDAOTest {
     private Issue issue;
 
     @InjectMocks
-    private
-    JiraStoryDAO jiraStroryDAO;
+    private JiraStoryDAO jiraStroryDAO;
 
     private static final String JIRA_KEY = "key";
     private static final String JIRA_FILTER = "filter";
 
     @Before
-    public void setUp() throws Exception { }
+    public void setUp() throws Exception {
+    }
 
     @Test
     public void getStoryByJiraKey_JiraStory_Success() throws Exception {
@@ -60,8 +61,8 @@ public class JiraStoryDAOTest {
     }
 
     @Test(expected = JiraException.class)
-    public void getUnexistedStoryByJiraKey_JiraStory_Null() throws Exception{
-        when(client.getIssue(anyString())).thenThrow(new JiraException("", new RestException("",404,"")));
+    public void getUnexistedStoryByJiraKey_JiraStory_Null() throws Exception {
+        when(client.getIssue(anyString())).thenThrow(new JiraException("", new RestException("", 404, "")));
         JiraStory story = jiraStroryDAO.getStoryByJiraKey(JIRA_KEY);
         Assert.assertNull(story);
     }
@@ -78,14 +79,14 @@ public class JiraStoryDAOTest {
         Assert.assertEquals(expectedStories, resultStories);
     }
 
-    @Test(expected = JiraException.class)
+    @Test(expected = JiraRuntimeException.class)
     public void getJiraStoriesByInvalidFilter_JiraStories_MalformedParametersException() throws Exception {
         when(client.searchIssues(anyString(), anyInt())).thenThrow(new JiraException("a"));
         jiraStroryDAO.getJiraStoriesByFilter(JIRA_FILTER);
     }
 
-    @Test(expected = JiraException.class)
-    public void getNonexistentJiraStroiesByInvalidFilter_JiraStories_Success() throws JiraException {
+    @Test(expected = JiraRuntimeException.class)
+    public void getNonexistentJiraStroiesByInvalidFilter_JiraStories_Success() throws Exception {
         when(client.searchIssues(anyString(), anyInt())).thenThrow(new JiraException("a", new RestException("a", 404, "bad")));
         List<JiraStory> subTasks = jiraStroryDAO.getJiraStoriesByFilter(JIRA_KEY);
         Assert.assertTrue(subTasks.isEmpty());
@@ -100,7 +101,7 @@ public class JiraStoryDAOTest {
 
     @Test(expected = JiraException.class)
     public void createStory() throws JiraException {
-        when(client.createIssue(anyString(),anyString())).thenCallRealMethod();
+        when(client.createIssue(anyString(), anyString())).thenCallRealMethod();
         jiraStroryDAO.createStory(suit);
     }
 

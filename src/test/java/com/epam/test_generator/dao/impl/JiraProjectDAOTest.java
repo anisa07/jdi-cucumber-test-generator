@@ -7,6 +7,8 @@ import com.epam.test_generator.pojo.JiraProject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.Project;
@@ -53,14 +55,14 @@ public class JiraProjectDAOTest {
         Assert.assertEquals(expectedProject, resultProject);
     }
 
-    @Test(expected = JiraException.class)
+    @Test(expected = JiraRuntimeException.class)
     public void getProjectByUnvalidJiraKey_JiraProject_MalformedParametersException() throws Exception {
-      when(client.getProject(anyString())).thenThrow(new JiraException("a"));
+      when(client.getProject(anyString())).thenThrow(new JiraRuntimeException("a"));
       jiraProjectDAO.getProjectByJiraKey(JIRA_KEY);
     }
 
-    @Test(expected = JiraException.class)
-    public void getNonexistentProjectByJadaKey_JadaProject_Success() throws JiraException {
+    @Test(expected = JiraRuntimeException.class)
+    public void getNonexistentProjectByJadaKey_JadaProject_Success() throws Exception {
       when(client.getProject(anyString())).thenThrow(new JiraException("a",new RestException("a",404,"bad")));
       JiraProject key = jiraProjectDAO.getProjectByJiraKey(JIRA_KEY);
       Assert.assertNull(key);
