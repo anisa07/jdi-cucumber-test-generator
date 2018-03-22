@@ -35,7 +35,11 @@ public class TagController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "projectId", value = "ID of project",
                     required = true, dataType = "long", paramType = "path"),
-            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+            @ApiImplicitParam(name = "Authorization",
+                              value = "add here your token",
+                              paramType = "header",
+                              dataType = "string",
+                              required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
     @RequestMapping(value = "/projects/{projectId}/tags",
@@ -56,7 +60,11 @@ public class TagController {
                     required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "suitId", value = "ID of suit which contains cases with tags",
                     required = true, dataType = "long", paramType = "path"),
-            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+            @ApiImplicitParam(name = "Authorization",
+                              value = "add here your token",
+                              paramType = "header",
+                              dataType = "string",
+                              required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
     @RequestMapping(value = "/projects/{projectId}/suits/{suitId}/cases/tags",
@@ -79,7 +87,11 @@ public class TagController {
                     required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "caseId", value = "ID of case which contains tags",
                     required = true, dataType = "long", paramType = "path"),
-            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+            @ApiImplicitParam(name = "Authorization",
+                              value = "add here your token",
+                              paramType = "header",
+                              dataType = "string",
+                              required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
     @RequestMapping(value = "/projects/{projectId}/suits/{suitId}/cases/{caseId}/tags",
@@ -107,12 +119,16 @@ public class TagController {
                     required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "tagDTO", value = "Added tag object",
                     required = true, dataType = "TagDTO", paramType = "body"),
-            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+            @ApiImplicitParam(name = "Authorization",
+                              value = "add here your token",
+                              paramType = "header",
+                              dataType = "string", required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD"})
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/projects/{projectId}/suits/{suitId}/cases/{caseId}/tags", method = RequestMethod.POST,
-            produces = "application/json")
+    @RequestMapping(value = "/projects/{projectId}/suits/{suitId}/cases/{caseId}/tags",
+                    method = RequestMethod.POST,
+                    produces = "application/json")
     public ResponseEntity<Long> addTagToCase(@PathVariable("projectId") long projectId,
                                              @PathVariable("suitId") long suitId,
                                              @PathVariable("caseId") long caseId,
@@ -139,10 +155,15 @@ public class TagController {
                     required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "tagDTO", value = "Updated tag object",
                     required = true, dataType = "TagDTO", paramType = "body"),
-            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+            @ApiImplicitParam(name = "Authorization",
+                              value = "add here your token",
+                              paramType = "header",
+                              dataType = "string", required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD"})
-    @RequestMapping(value = "/projects/{projectId}/suits/{suitId}/cases/{caseId}/tags/{tagId}", method = RequestMethod.PUT, consumes = "application/json")
+    @RequestMapping(value = "/projects/{projectId}/suits/{suitId}/cases/{caseId}/tags/{tagId}",
+                    method = RequestMethod.PUT,
+                    consumes = "application/json")
     public ResponseEntity<Void> updateTag(@PathVariable("projectId") long projectId,
                                           @PathVariable("suitId") long suitId,
                                           @PathVariable("caseId") long caseId,
@@ -167,7 +188,11 @@ public class TagController {
                     required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "tagId", value = "ID of tag to delete",
                     required = true, dataType = "long", paramType = "path"),
-            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+            @ApiImplicitParam(name = "Authorization",
+                              value = "add here your token",
+                              paramType = "header",
+                              dataType = "string",
+                              required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD"})
     @RequestMapping(value = "/projects/{projectId}/suits/{suitId}/cases/{caseId}/tags/{tagId}",
