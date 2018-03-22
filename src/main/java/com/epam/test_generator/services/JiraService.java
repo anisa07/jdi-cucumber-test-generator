@@ -1,7 +1,5 @@
 package com.epam.test_generator.services;
 
-import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
-
 import com.epam.test_generator.config.security.AuthenticatedUser;
 import com.epam.test_generator.dao.impl.JiraProjectDAO;
 import com.epam.test_generator.dao.impl.JiraStoryDAO;
@@ -11,26 +9,25 @@ import com.epam.test_generator.dao.interfaces.ProjectDAO;
 import com.epam.test_generator.dao.interfaces.RemovedIssueDAO;
 import com.epam.test_generator.dao.interfaces.SuitDAO;
 import com.epam.test_generator.dto.ProjectDTO;
-import com.epam.test_generator.entities.Case;
-import com.epam.test_generator.entities.Project;
-import com.epam.test_generator.entities.RemovedIssue;
-import com.epam.test_generator.entities.Suit;
-import com.epam.test_generator.entities.User;
+import com.epam.test_generator.entities.*;
 import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.pojo.JiraProject;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.pojo.JiraSubTask;
 import com.epam.test_generator.transformers.ProjectTransformer;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import net.rcarz.jiraclient.JiraException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
 
 @Service
 @Transactional
@@ -74,11 +71,9 @@ public class JiraService {
      */
     public Project createProjectWithAttachments(List<JiraStory> stories, Authentication auth) {
         if (!stories.isEmpty()) {
-
             final String projectKey = stories.get(FIRST).getJiraProjectKey();
             final JiraProject projectByJiraKey = jiraProjectDAO.getProjectByJiraKey(projectKey);
-            createProjectFromJiraProject(projectByJiraKey, auth);
-            return addStoriesToExistedProject(stories, projectKey);
+            return createProjectFromJiraProject(projectByJiraKey, auth, stories);
         }
         return null;
     }
@@ -138,17 +133,19 @@ public class JiraService {
      *
      * @param jiraProject - new project from Jira
      */
-    private void createProjectFromJiraProject(JiraProject jiraProject, Authentication auth) {
-        Project project = new Project();
+    private Project createProjectFromJiraProject(JiraProject jiraProject, Authentication auth, List<JiraStory> stories) {
+        final User user = userService.getUserByEmail(((AuthenticatedUser) auth.getPrincipal()).getEmail());
+
+        final Project project = new Project();
+
         project.setName(jiraProject.getName());
         project.setDescription(jiraProject.getDescription());
         project.setJiraKey(jiraProject.getJiraKey());
         project.setActive(true);
-        AuthenticatedUser userDetails = (AuthenticatedUser) auth.getPrincipal();
-        User user = userService.getUserByEmail(userDetails.getEmail());
         project.setUsers(Collections.singleton(user));
+        project.getSuits().addAll(mapJiraStoriesToSuits(stories));
 
-        projectDAO.save(project);
+        return projectDAO.save(project);
     }
 
 
