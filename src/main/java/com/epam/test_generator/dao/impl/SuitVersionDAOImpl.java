@@ -31,7 +31,9 @@ import org.javers.repository.jql.QueryBuilder;
 import org.javers.shadow.Shadow;
 import org.javers.spring.auditable.AuthorProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class SuitVersionDAOImpl implements SuitVersionDAO {
 
     @Autowired
