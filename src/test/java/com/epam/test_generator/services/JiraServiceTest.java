@@ -170,7 +170,7 @@ public class JiraServiceTest {
         when(jiraStory.getJiraKey()).thenReturn(JIRA_KEY);
         when(jiraSubTask.getJiraKey()).thenReturn(JIRA_KEY);
 
-        jiraService.addStoriesToExistedProject(JIRA_SETTINGS_ID, Collections.singletonList(jiraStory), JIRA_PROJECT_KEY);
+        jiraService.addStoriesToExistedProject(Collections.singletonList(jiraStory), JIRA_PROJECT_KEY);
 
         verify(projectDAO).save(any(Project.class));
     }

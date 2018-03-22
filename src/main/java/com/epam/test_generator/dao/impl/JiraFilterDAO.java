@@ -1,11 +1,11 @@
 package com.epam.test_generator.dao.impl;
 
+import com.epam.test_generator.entities.factory.JiraClientFactory;
 import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.RestClient;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
@@ -17,11 +17,12 @@ import org.springframework.stereotype.Component;
 public class JiraFilterDAO {
 
     @Autowired
-    private JiraClient client;
+    private JiraClientFactory jiraClientFactory;
 
+    public List<JiraFilter> getFilters(Long clientId) {
 
-    public List<JiraFilter> getFilters() {
-        final RestClient restclient = client.getRestClient();
+        final RestClient restclient = jiraClientFactory.getJiraClient(clientId).getRestClient();
+
         try {
             final URI uri = restclient.buildURI("/rest/api/2/filter/favourite");
             final JSON response = restclient.get(uri);

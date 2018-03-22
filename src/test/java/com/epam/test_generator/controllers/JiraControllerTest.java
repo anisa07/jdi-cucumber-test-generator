@@ -1,9 +1,18 @@
 package com.epam.test_generator.controllers;
 
-import com.epam.test_generator.entities.factory.JiraClientFactory;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.services.JiraService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,16 +23,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JiraControllerTest {
@@ -52,15 +51,14 @@ public class JiraControllerTest {
 
     @Test
     public void createStoriesForProject() throws Exception {
-        List<JiraStory> jiraStories = new ArrayList<>();
+        final List<JiraStory> jiraStories = new ArrayList<>();
 
-        mockMvc.perform(post("/jira/ " +  JIRA_SETTINGS_ID +"/project/" + SIMPLE_JIRA_PROJECT_KEY + "/suits")
+        mockMvc.perform(post("/jira/project/" + SIMPLE_JIRA_PROJECT_KEY + "/suits")
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(jiraStories)))
-            .andDo(print())
             .andExpect(status().isOk());
 
-        verify(jiraService).addStoriesToExistedProject(JIRA_SETTINGS_ID, jiraStories, SIMPLE_JIRA_PROJECT_KEY);
+        verify(jiraService).addStoriesToExistedProject(jiraStories, SIMPLE_JIRA_PROJECT_KEY);
     }
 
     @Test

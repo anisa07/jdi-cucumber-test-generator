@@ -7,15 +7,18 @@ import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.services.JiraService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import java.util.List;
 import net.rcarz.jiraclient.JiraException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 
 /**
@@ -68,14 +71,16 @@ public class JiraController {
     @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
     @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header",
             dataType = "string", required = true)
-    @RequestMapping(value = "/projectByFilters", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(value = "/jiraSettingsId/projectByFilters", method = RequestMethod.POST,
+        consumes = "application/json")
     public ResponseEntity<ProjectDTO> createProjectByFilters(
-            @RequestBody() List<JiraFilter> jiraFilters, Authentication auth) {
+        @PathVariable("jiraSettingsId") Long clientId, @RequestBody() List<JiraFilter> jiraFilters,
+        Authentication auth) {
 
         return new ResponseEntity<>
-                (jiraService.createProjectWithAttachedFilters(jiraFilters, auth), HttpStatus.OK);
+            (jiraService.createProjectWithAttachedFilters(clientId, jiraFilters, auth),
+                HttpStatus.OK);
     }
-
 
 
     @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
@@ -83,14 +88,12 @@ public class JiraController {
         @ApiImplicitParam(name = "jiraKey", value = "Key of project", required = true, dataType = "long", paramType = "path"),
         @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
     })
-    @RequestMapping(value = "/{jiraSettingsId}/project/{jiraKey}/suits", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(value = "/project/{jiraKey}/suits", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<String> createStoriesForProject(
         @RequestBody List<JiraStory> jiraStories,
-        @PathVariable("jiraKey") String jiraProjectKey,
-        @PathVariable("jiraSettingsId") Long id
-    ) throws JiraException {
+        @PathVariable("jiraKey") String jiraProjectKey) {
 
-        jiraService.addStoriesToExistedProject(id, jiraStories, jiraProjectKey);
+        jiraService.addStoriesToExistedProject(jiraStories, jiraProjectKey);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

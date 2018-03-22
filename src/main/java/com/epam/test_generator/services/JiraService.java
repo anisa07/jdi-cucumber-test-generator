@@ -1,28 +1,42 @@
 package com.epam.test_generator.services;
 
+import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
+
 import com.epam.test_generator.config.security.AuthenticatedUser;
 import com.epam.test_generator.dao.impl.JiraProjectDAO;
 import com.epam.test_generator.dao.impl.JiraStoryDAO;
 import com.epam.test_generator.dao.impl.JiraSubStroryDAO;
-import com.epam.test_generator.dao.interfaces.*;
+import com.epam.test_generator.dao.interfaces.CaseDAO;
+import com.epam.test_generator.dao.interfaces.ProjectDAO;
+import com.epam.test_generator.dao.interfaces.RemovedIssueDAO;
+import com.epam.test_generator.dao.interfaces.SuitDAO;
+import com.epam.test_generator.dao.interfaces.SuitVersionDAO;
 import com.epam.test_generator.dto.ProjectDTO;
-import com.epam.test_generator.entities.*;
-import com.epam.test_generator.pojo.*;
+import com.epam.test_generator.entities.Case;
+import com.epam.test_generator.entities.Project;
+import com.epam.test_generator.entities.RemovedIssue;
+import com.epam.test_generator.entities.Status;
+import com.epam.test_generator.entities.Suit;
+import com.epam.test_generator.entities.User;
+import com.epam.test_generator.pojo.JiraFilter;
+import com.epam.test_generator.pojo.JiraProject;
+import com.epam.test_generator.pojo.JiraStatus;
+import com.epam.test_generator.pojo.JiraStory;
+import com.epam.test_generator.pojo.JiraSubTask;
+import com.epam.test_generator.pojo.PropertyDifference;
+import com.epam.test_generator.pojo.SuitVersion;
 import com.epam.test_generator.transformers.ProjectTransformer;
-import net.rcarz.jiraclient.JiraException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
+import net.rcarz.jiraclient.JiraException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -58,9 +72,6 @@ public class JiraService {
     @Autowired
     private SuitVersionDAO suitVersionDAO;
 
-    @Autowired
-    private JiraSettingsDAO jiraSettingsDAO;
-
     private static final Integer FIRST = 0;
 
 
@@ -73,29 +84,27 @@ public class JiraService {
     public Project createProjectWithAttachments(Long clientId, List<JiraStory> stories,
                                                 Authentication auth) {
         if (!stories.isEmpty()) {
-            String projectKey = stories.get(FIRST).getJiraProjectKey();
-            JiraProject projectByJiraKey = jiraProjectDAO
-                    .getProjectByJiraKey(clientId, projectKey);
-            createProjectFromJiraProject(projectByJiraKey, auth);
-            addStoriesToExistedProject(clientId, stories, projectKey);
+            final String projectKey = stories.get(FIRST).getJiraProjectKey();
+            final JiraProject projectByJiraKey = jiraProjectDAO.getProjectByJiraKey(clientId,
+                projectKey);
+            return createProjectFromJiraProject(projectByJiraKey, auth, stories);
         }
-        final String projectKey = stories.get(FIRST).getJiraProjectKey();
-        final JiraProject projectByJiraKey = jiraProjectDAO.getProjectByJiraKey(projectKey);
-        return createProjectFromJiraProject(projectByJiraKey, auth, stories);
-    }
         return null;
-}
+    }
 
-    public ProjectDTO createProjectWithAttachedFilters(List<JiraFilter> jiraFilters,
+
+    public ProjectDTO createProjectWithAttachedFilters(Long clientId, List<JiraFilter> jiraFilters,
                                                        Authentication auth) {
         return projectTransformer
-                .toDto(createProjectWithAttachments(findStoriesByFilters(jiraFilters), auth));
+            .toDto(createProjectWithAttachments(clientId, findStoriesByFilters(clientId,
+                jiraFilters),
+                auth));
     }
 
-    private List<JiraStory> findStoriesByFilters(List<JiraFilter> jiraFilters) {
+    private List<JiraStory> findStoriesByFilters(Long clientId, List<JiraFilter> jiraFilters) {
         return jiraFilters.stream()
                 .map(JiraFilter::getJql)
-                .flatMap(jql -> jiraStoryDAO.getJiraStoriesByFilter(jql).stream())
+            .flatMap(jql -> jiraStoryDAO.getJiraStoriesByFilter(clientId, jql).stream())
                 .distinct()
                 .collect(Collectors.toList());
     }
@@ -106,10 +115,10 @@ public class JiraService {
      *
      * @param stories collection of Jira stories
      */
-    public Project addStoriesToExistedProject(Long clientId, List<JiraStory> stories, String projectKey) {
+    public ProjectDTO addStoriesToExistedProject(List<JiraStory> stories, String projectKey) {
         final Project project = checkNotNull(projectDAO.findByJiraKey(projectKey));
         project.getSuits().addAll(mapJiraStoriesToSuits(stories));
-        return projectDAO.save(project);
+        return projectTransformer.toDto(projectDAO.save(project));
     }
 
     private List<Suit> mapJiraStoriesToSuits(List<JiraStory> stories) {
@@ -274,7 +283,7 @@ public class JiraService {
      *
      * @return list projects
      */
-    public List<JiraProject> getNonexistentJiraProjects(Long clientId) throws JiraException {
+    public List<JiraProject> getNonexistentJiraProjects(Long clientId) {
         return jiraProjectDAO.getAllProjects(clientId).stream()
                 .filter(project -> projectDAO.findByJiraKey(project.getJiraKey()) == null)
                 .collect(Collectors.toList());

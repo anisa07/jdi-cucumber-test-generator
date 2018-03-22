@@ -54,7 +54,7 @@ public class JiraProjectDAOTest {
     private static final Long JIRA_SETTINGS_ID = 1L;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         when(jiraClientFactory.getJiraClient(anyLong())).thenReturn(client);
         jiraSettings = new JiraSettings();
         jiraSettings.setLogin("login");
@@ -66,7 +66,7 @@ public class JiraProjectDAOTest {
     @Test
     public void getProjectByJiraKey_JiraProject_Success() throws Exception {
         when(client.getProject(anyString())).thenReturn(project);
-        when(jiraFilterDAO.getFilters()).thenReturn(Collections.emptyList());
+        when(jiraFilterDAO.getFilters(JIRA_SETTINGS_ID)).thenReturn(Collections.emptyList());
 
         JiraProject expectedProject = new JiraProject(project, Collections.emptyList());
         JiraProject resultProject = jiraProjectDAO.getProjectByJiraKey(JIRA_SETTINGS_ID, JIRA_KEY);
@@ -89,7 +89,7 @@ public class JiraProjectDAOTest {
     @Test
     public void getAllProjects_JiraProjects_Success() throws Exception {
         when(client.getProjects()).thenReturn(Arrays.asList(project));
-        when(jiraFilterDAO.getFilters()).thenReturn(Collections.emptyList());
+        when(jiraFilterDAO.getFilters(JIRA_SETTINGS_ID)).thenReturn(Collections.emptyList());
 
 
         List<JiraProject> resultProjects = jiraProjectDAO.getAllProjects(JIRA_SETTINGS_ID);
