@@ -1,7 +1,6 @@
 package com.epam.test_generator.entities;
 
 
-import java.util.List;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.persistence.*;
