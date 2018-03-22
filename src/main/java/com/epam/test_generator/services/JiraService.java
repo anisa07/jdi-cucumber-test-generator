@@ -19,14 +19,12 @@ import com.epam.test_generator.entities.Status;
 import com.epam.test_generator.entities.Suit;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.pojo.JiraProject;
+import com.epam.test_generator.pojo.JiraStatus;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.pojo.JiraSubTask;
 import com.epam.test_generator.pojo.PropertyDifference;
 import com.epam.test_generator.pojo.SuitVersion;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.chrono.ChronoLocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -74,11 +72,6 @@ public class JiraService {
 
 
     private static final Integer FIRST = 0;
-    private final static Integer CLOSE_ACTION_ID = 31;
-    private final static Integer RESOLVE_ACTION_ID = 21;
-    private final static Integer IN_PROGRESS_ACTION_ID = 11;
-    private final static Integer REOPEN = 71;
-
 
     /**
      * Creates project from Jira in the system with specified jira stories (suits in BDD) and all
@@ -362,7 +355,8 @@ public class JiraService {
 
     private void closeRemovedSuitsInJira() throws JiraException {
         for (RemovedIssue issueToDeleteInJira : removedIssueDAO.findAll()) {
-            jiraStoryDAO.changeStatusByJiraKey(issueToDeleteInJira.getJiraKey(), CLOSE_ACTION_ID);
+            jiraStoryDAO.changeStatusByJiraKey(issueToDeleteInJira.getJiraKey(),
+                JiraStatus.CLOSED.getActionId());
             removedIssueDAO.delete(issueToDeleteInJira);
         }
     }
@@ -382,11 +376,12 @@ public class JiraService {
         }
         return null;
     }
+
     private void updateStoryInJira(Suit suit) throws JiraException {
         Integer actionId = null;
         switch (suit.getStatus()) {
             case PASSED:
-                actionId = RESOLVE_ACTION_ID;
+                actionId = JiraStatus.RESOLVED.getActionId();
                 break;
             case FAILED:
                 List<SuitVersion> suitVersions = suitVersionDAO.findAll(suit.getId());
@@ -394,11 +389,12 @@ public class JiraService {
 
                 while (iterator.hasPrevious()) {
                     SuitVersion suitVersion = iterator.previous();
-                    List<PropertyDifference> propertyDifferences = suitVersion.getPropertyDifferences();
+                    List<PropertyDifference> propertyDifferences = suitVersion
+                        .getPropertyDifferences();
                     Status previousStatus = getStatusFromPropertyDiff(propertyDifferences);
                     if (!suit.getStatus().equals(previousStatus) && previousStatus != null) {
                         if (previousStatus.equals(Status.PASSED)) {
-                            actionId = REOPEN;
+                            actionId = JiraStatus.REOPENED.getActionId();
                             break;
                         }
                     }
@@ -438,7 +434,7 @@ public class JiraService {
             if (isSuitJustCreated(suit)) {
                 createStoryWithSubTasksInJira(suit);
             } else if (isSuitChangedAfterLastSync(suit)) {
-               updateStoryInJira(suit);
+                updateStoryInJira(suit);
             }
 
             for (Case caze : suit.getCases()) {
