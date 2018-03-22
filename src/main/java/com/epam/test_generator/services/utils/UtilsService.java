@@ -19,9 +19,12 @@ import java.util.Set;
  */
 public class UtilsService {
 
-    public static<T> void checkNotNull(T obj) {
-        if (obj == null)
+    public static <T> T checkNotNull(T obj) {
+        if (obj == null) {
             throw new NotFoundException();
+        } else {
+            return obj;
+        }
     }
 
     /**

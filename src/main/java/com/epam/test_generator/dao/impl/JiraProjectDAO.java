@@ -2,6 +2,7 @@ package com.epam.test_generator.dao.impl;
 
 import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.pojo.JiraProject;
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.rcarz.jiraclient.JiraClient;
@@ -18,10 +19,14 @@ public class JiraProjectDAO {
     @Autowired
     private JiraFilterDAO jiraFilterDAO;
 
-    public JiraProject getProjectByJiraKey(String jiraKey) throws JiraException {
+    public JiraProject getProjectByJiraKey(String jiraKey) {
         final List<JiraFilter> filters = jiraFilterDAO.getFilters();
 
-        return new JiraProject(client.getProject(jiraKey), getProjectFilters(filters, jiraKey));
+        try {
+            return new JiraProject(client.getProject(jiraKey), getProjectFilters(filters, jiraKey));
+        } catch (JiraException e) {
+            throw new JiraRuntimeException(e.getMessage(), e);
+        }
     }
 
     public List<JiraProject> getAllProjects() throws JiraException {

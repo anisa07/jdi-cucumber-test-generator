@@ -3,6 +3,7 @@ package com.epam.test_generator.dao.impl;
 import com.epam.test_generator.dao.interfaces.SuitDAO;
 import com.epam.test_generator.entities.Suit;
 import com.epam.test_generator.pojo.JiraStory;
+import com.epam.test_generator.services.exceptions.JiraRuntimeException;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.Issue;
 import net.rcarz.jiraclient.Issue.SearchResult;
@@ -64,9 +65,14 @@ public class JiraStoryDAO {
                 .collect(Collectors.toList());
     }
 
-    public List<JiraStory> getJiraStoriesByFilter(String search) throws JiraException {
+    public List<JiraStory> getJiraStoriesByFilter(String search) {
 
-        List<Issue> issues = client.searchIssues(search, MAX_NUMBER_OF_ISSUES).issues;
+        List<Issue> issues;
+        try {
+            issues = client.searchIssues(search, MAX_NUMBER_OF_ISSUES).issues;
+        } catch (JiraException e) {
+            throw new JiraRuntimeException(e.getMessage(), e);
+        }
         return issues.stream().map(JiraStory::new).collect(Collectors.toList());
     }
 

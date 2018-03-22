@@ -22,19 +22,25 @@ public class JiraFilter {
     private String owner;
     private String jql;
 
+
+
     public JiraFilter(RestClient restClient, JSONObject json) {
         final JSONObject jsonObject = Objects.requireNonNull(json);
         deserialize(jsonObject, restClient);
     }
 
-    private void deserialize(JSONObject jsonObject, RestClient restClient) {
-        final Map<?, ?> map = jsonObject;
 
-        self = Field.getString(map.get(SELF));
-        id = Field.getString(map.get(FILTER_ID));
-        name = Field.getString(map.get(FILTER_NAME));
-        jql = Field.getString(map.get(FILTER_JQL));
-        owner = Field.getResource(User.class, map.get(OWNER), restClient).getName();
+    public JiraFilter() {
+    }
+
+    private void deserialize(JSONObject jsonObject, RestClient restClient) {
+
+        self = Field.getString(((Map<?, ?>) jsonObject).get(SELF));
+        id = Field.getString(((Map<?, ?>) jsonObject).get(FILTER_ID));
+        name = Field.getString(((Map<?, ?>) jsonObject).get(FILTER_NAME));
+        jql = Field.getString(((Map<?, ?>) jsonObject).get(FILTER_JQL));
+        owner = Field.getResource(User.class, ((Map<?, ?>) jsonObject).get(OWNER), restClient)
+            .getName();
 
     }
 

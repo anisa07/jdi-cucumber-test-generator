@@ -1,22 +1,21 @@
 package com.epam.test_generator.controllers;
 
+import com.epam.test_generator.dto.ProjectDTO;
+import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.pojo.JiraProject;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.services.JiraService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import java.util.List;
 import net.rcarz.jiraclient.JiraException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 /**
@@ -61,6 +60,19 @@ public class JiraController {
         jiraService.createProjectWithAttachments(jiraStories, auth);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
+    @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header",
+            dataType = "string", required = true)
+    @RequestMapping(value = "/projectByFilters", method = RequestMethod.POST, consumes = "application/json")
+    public ResponseEntity<ProjectDTO> createProjectByFilters(
+            @RequestBody() List<JiraFilter> jiraFilters, Authentication auth) {
+
+        return new ResponseEntity<>
+                (jiraService.createProjectWithAttachedFilters(jiraFilters, auth), HttpStatus.OK);
+    }
+
+
 
     @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
     @ApiImplicitParams({
