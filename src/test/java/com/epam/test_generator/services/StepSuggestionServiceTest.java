@@ -60,7 +60,7 @@ public class StepSuggestionServiceTest {
         when(stepSuggestionTransformer.toDtoList(listSteps)).thenReturn(expectedListSteps);
 
         List<StepSuggestionDTO> getListStepsSuggestion = stepSuggestionService
-            .getStepsSuggestions();
+            .getStepsSuggestions(null, null, null);
         assertEquals(true,
             Arrays.deepEquals(expectedListSteps.toArray(), getListStepsSuggestion.toArray()));
 
@@ -75,7 +75,7 @@ public class StepSuggestionServiceTest {
         when(stepSuggestionTransformer.toDtoList(testPage.getContent())).thenReturn(expectedListSteps.subList(0, 1));
 
         List<StepSuggestionDTO> getListStepsSuggestion = stepSuggestionService
-                .getStepsSuggestions(1, PAGE_SIZE);
+                .getStepsSuggestions(null, 1, PAGE_SIZE);
         assertEquals(expectedListSteps.subList(0, 1), getListStepsSuggestion);
 
         verify(stepSuggestionDAO).findAll(any(Pageable.class));
@@ -90,7 +90,7 @@ public class StepSuggestionServiceTest {
         when(stepSuggestionTransformer.toDtoList(testPage.getContent())).thenReturn(expectedListSteps.subList(0, 1));
 
         List<StepSuggestionDTO> getListStepsSuggestion = stepSuggestionService
-                .getStepsSuggestionsByType(StepType.GIVEN, 1, PAGE_SIZE);
+                .getStepsSuggestions(StepType.GIVEN, 1, PAGE_SIZE);
         assertEquals(expectedListSteps.subList(0, 1), getListStepsSuggestion);
 
         verify(stepSuggestionDAO).findAll(any(Pageable.class));
@@ -105,7 +105,7 @@ public class StepSuggestionServiceTest {
         when(stepSuggestionTransformer.toDtoList(testPage.getContent())).thenReturn(expectedListSteps.subList(1, 2));
 
         List<StepSuggestionDTO> getListStepsSuggestion = stepSuggestionService
-                .getStepsSuggestionsByType(StepType.THEN, 2, PAGE_SIZE);
+                .getStepsSuggestions(StepType.THEN, 2, PAGE_SIZE);
         assertEquals(expectedListSteps.subList(1, 2), getListStepsSuggestion);
 
         verify(stepSuggestionDAO).findAll(any(Pageable.class));
