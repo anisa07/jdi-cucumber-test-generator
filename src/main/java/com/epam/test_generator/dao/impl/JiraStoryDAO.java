@@ -83,6 +83,9 @@ public class JiraStoryDAO {
 
 
     public void changeStatusByJiraKey(String jiraKey, Integer action_id) throws JiraException{
+        if (action_id == null) {
+            return;
+        }
         client
             .getIssue(jiraKey)
             .transition()

@@ -10,6 +10,7 @@ import com.epam.test_generator.dao.interfaces.CaseDAO;
 import com.epam.test_generator.dao.interfaces.ProjectDAO;
 import com.epam.test_generator.dao.interfaces.RemovedIssueDAO;
 import com.epam.test_generator.dao.interfaces.SuitDAO;
+import com.epam.test_generator.dao.interfaces.SuitVersionDAO;
 import com.epam.test_generator.dao.interfaces.UserDAO;
 import com.epam.test_generator.entities.Case;
 import com.epam.test_generator.entities.Project;
@@ -20,9 +21,15 @@ import com.epam.test_generator.entities.User;
 import com.epam.test_generator.pojo.JiraProject;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.pojo.JiraSubTask;
+import com.epam.test_generator.pojo.PropertyDifference;
+import com.epam.test_generator.pojo.SuitVersion;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.chrono.ChronoLocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.rcarz.jiraclient.JiraException;
@@ -62,10 +69,15 @@ public class JiraService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private SuitVersionDAO suitVersionDAO;
+
+
     private static final Integer FIRST = 0;
     private final static Integer CLOSE_ACTION_ID = 31;
     private final static Integer RESOLVE_ACTION_ID = 21;
     private final static Integer IN_PROGRESS_ACTION_ID = 11;
+    private final static Integer REOPEN = 71;
 
 
     /**
@@ -362,17 +374,36 @@ public class JiraService {
         }
     }
 
+    private Status getStatusFromPropertyDiff(List<PropertyDifference> propertyDifferences) {
+        for (PropertyDifference propertyDifference : propertyDifferences) {
+            if (propertyDifference.getPropertyName().equals("status")) {
+                return (Status) propertyDifference.getNewValue();
+            }
+        }
+        return null;
+    }
     private void updateStoryInJira(Suit suit) throws JiraException {
-        Integer actionId;
+        Integer actionId = null;
         switch (suit.getStatus()) {
             case PASSED:
                 actionId = RESOLVE_ACTION_ID;
                 break;
             case FAILED:
-                actionId = IN_PROGRESS_ACTION_ID;
+                List<SuitVersion> suitVersions = suitVersionDAO.findAll(suit.getId());
+                ListIterator<SuitVersion> iterator = suitVersions.listIterator(suitVersions.size());
+
+                while (iterator.hasPrevious()) {
+                    SuitVersion suitVersion = iterator.previous();
+                    List<PropertyDifference> propertyDifferences = suitVersion.getPropertyDifferences();
+                    Status previousStatus = getStatusFromPropertyDiff(propertyDifferences);
+                    if (!suit.getStatus().equals(previousStatus) && previousStatus != null) {
+                        if (previousStatus.equals(Status.PASSED)) {
+                            actionId = REOPEN;
+                            break;
+                        }
+                    }
+                }
                 break;
-            default:
-                actionId = null;
         }
 
         if (actionId != null) {
@@ -404,8 +435,6 @@ public class JiraService {
     public void syncToJira() throws JiraException {
 
         for (Suit suit : suitDAO.findAll()) {
-            if (suit.getId() == 3)
-                updateStoryInJira(suit);
             if (isSuitJustCreated(suit)) {
                 createStoryWithSubTasksInJira(suit);
             } else if (isSuitChangedAfterLastSync(suit)) {
