@@ -82,7 +82,7 @@ public class ProjectService {
      * @param authentication current authorized user
      * @return id of project
      */
-    public Long createProject(ProjectDTO projectDTO, Authentication authentication) {
+    public ProjectDTO createProject(ProjectDTO projectDTO, Authentication authentication) {
         AuthenticatedUser userDetails = (AuthenticatedUser) authentication.getPrincipal();
         User authUser = userService.getUserByEmail(userDetails.getEmail());
 
@@ -91,7 +91,7 @@ public class ProjectService {
         project.setActive(true);
         project = projectDAO.save(project);
 
-        return project.getId();
+        return projectTransformer.toDto(project);
     }
 
     public Long createProjectwithoutPrincipal(ProjectDTO projectDTO) {
