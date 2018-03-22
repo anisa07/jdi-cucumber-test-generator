@@ -68,7 +68,7 @@ public class StepSuggestionController {
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
     @RequestMapping(value = "/stepSuggestions", method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<List<StepSuggestionDTO>> getStepsSuggestionsByType(
+    public ResponseEntity<List<StepSuggestionDTO>> getStepsSuggestions(
             @RequestParam(value = "stepType", required = false) StepType stepType,
             @RequestParam(value = "page", required = false) Integer pageNumber,
             @RequestParam(value = "size", required = false) Integer pageSize) {
