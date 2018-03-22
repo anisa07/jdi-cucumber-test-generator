@@ -82,12 +82,15 @@ public class JiraStoryDAO {
         suitDAO.save(suit);
     }
 
-    public void closeStoryByJiraKey(Long clientId, String jiraKey) throws JiraException {
 
+    public void changeStatusByJiraKey(Long clientId, String jiraKey, Integer action_id) throws JiraException{
+        if (action_id == null) {
+            return;
+        }
         jiraClientFactory.getJiraClient(clientId)
             .getIssue(jiraKey)
             .transition()
-            .execute(CLOSE_ACTION_ID);
+            .execute(action_id);
     }
 
     public void createStory(Long clientId, Suit suit) throws JiraException {

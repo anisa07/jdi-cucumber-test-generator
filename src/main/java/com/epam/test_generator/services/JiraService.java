@@ -2,6 +2,8 @@ package com.epam.test_generator.services;
 
 import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
 
+import static com.epam.test_generator.services.utils.UtilsService.checkNotNull;
+
 import com.epam.test_generator.config.security.AuthenticatedUser;
 import com.epam.test_generator.dao.impl.JiraProjectDAO;
 import com.epam.test_generator.dao.impl.JiraStoryDAO;
@@ -11,13 +13,16 @@ import com.epam.test_generator.dao.interfaces.JiraSettingsDAO;
 import com.epam.test_generator.dao.interfaces.ProjectDAO;
 import com.epam.test_generator.dao.interfaces.RemovedIssueDAO;
 import com.epam.test_generator.dao.interfaces.SuitDAO;
+import com.epam.test_generator.dao.interfaces.SuitVersionDAO;
 import com.epam.test_generator.dao.interfaces.UserDAO;
 import com.epam.test_generator.entities.Case;
 import com.epam.test_generator.entities.Project;
 import com.epam.test_generator.entities.RemovedIssue;
+import com.epam.test_generator.entities.Status;
 import com.epam.test_generator.entities.Suit;
 import com.epam.test_generator.entities.User;
 import com.epam.test_generator.pojo.JiraProject;
+import com.epam.test_generator.pojo.JiraStatus;
 import com.epam.test_generator.pojo.JiraStory;
 import com.epam.test_generator.pojo.JiraSubTask;
 import java.time.LocalDateTime;
@@ -30,6 +35,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.epam.test_generator.dao.interfaces.CaseDAO;
+import com.epam.test_generator.dao.interfaces.JiraSettingsDAO;
+import com.epam.test_generator.dao.interfaces.ProjectDAO;
+import com.epam.test_generator.dao.interfaces.RemovedIssueDAO;
+import com.epam.test_generator.dao.interfaces.SuitDAO;
+import com.epam.test_generator.dao.interfaces.UserDAO;
+import com.epam.test_generator.entities.Case;
+import com.epam.test_generator.entities.Project;
+import com.epam.test_generator.entities.RemovedIssue;
+import com.epam.test_generator.entities.Suit;
+import com.epam.test_generator.entities.User;
+import com.epam.test_generator.pojo.JiraStatus;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -61,6 +83,9 @@ public class JiraService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SuitVersionDAO suitVersionDAO;
 
     @Autowired
     private JiraSettingsDAO jiraSettingsDAO;
@@ -168,6 +193,7 @@ public class JiraService {
             suit.setPriority(getPriority(jiraStory.getPriority()));
             suit.setLastModifiedDate(LocalDateTime.now());
             suit.setLastJiraSyncDate(suit.getLastModifiedDate());
+            suit.setStatus(getBDDStatus(jiraStory.getStatus()));
             suit = suitDAO.save(suit);
             Project project = projectDAO.findByJiraKey(projectKey);
             checkNotNull(project);
@@ -210,12 +236,19 @@ public class JiraService {
         if (suit == null) {
             return;
         }
-        suit.setName(jiraStory.getName());
-        suit.setDescription(jiraStory.getDescription());
-        suit.setPriority(getPriority(jiraStory.getPriority()));
-        suit.setLastJiraSyncDate(LocalDateTime.now());
-
         suitDAO.save(suit);
+    }
+
+    private Status getBDDStatus(String jiraStatus) {
+        Status status;
+        switch (jiraStatus) {
+            case "Resolved":
+                status = Status.PASSED;
+                break;
+            default:
+                status = Status.NOT_RUN;
+        }
+        return status;
     }
 
 
@@ -347,7 +380,8 @@ public class JiraService {
 
     private void closeRemovedSuitsInJira(Long clientId) throws JiraException {
         for (RemovedIssue issueToDeleteInJira : removedIssueDAO.findAll()) {
-            jiraStoryDAO.closeStoryByJiraKey(clientId, issueToDeleteInJira.getJiraKey());
+            jiraStoryDAO.changeStatusByJiraKey(clientId, issueToDeleteInJira.getJiraKey(),
+                JiraStatus.CLOSED.getActionId());
             removedIssueDAO.delete(issueToDeleteInJira);
         }
     }
@@ -357,6 +391,45 @@ public class JiraService {
         jiraStoryDAO.createStory(clientId, suit);
         for (Case cases : suit.getCases()) {
             jiraSubStoryDAO.createSubStory(clientId, cases);
+        }
+    }
+
+    private Status getStatusFromPropertyDiff(List<PropertyDifference> propertyDifferences) {
+        for (PropertyDifference propertyDifference : propertyDifferences) {
+            if (propertyDifference.getPropertyName().equals("status")) {
+                return (Status) propertyDifference.getNewValue();
+            }
+        }
+        return null;
+    }
+
+    private void updateStoryInJira(Suit suit) throws JiraException {
+        Integer actionId = null;
+        switch (suit.getStatus()) {
+            case PASSED:
+                actionId = JiraStatus.RESOLVED.getActionId();
+                break;
+            case FAILED:
+                List<SuitVersion> suitVersions = suitVersionDAO.findAll(suit.getId());
+                ListIterator<SuitVersion> iterator = suitVersions.listIterator(suitVersions.size());
+
+                while (iterator.hasPrevious()) {
+                    SuitVersion suitVersion = iterator.previous();
+                    List<PropertyDifference> propertyDifferences = suitVersion
+                        .getPropertyDifferences();
+                    Status previousStatus = getStatusFromPropertyDiff(propertyDifferences);
+                    if (!suit.getStatus().equals(previousStatus) && previousStatus != null) {
+                        if (previousStatus.equals(Status.PASSED)) {
+                            actionId = JiraStatus.REOPENED.getActionId();
+                            break;
+                        }
+                    }
+                }
+                break;
+        }
+
+        if (actionId != null) {
+            jiraStoryDAO.changeStatusByJiraKey(suit.getJiraKey(), actionId);
         }
     }
 
@@ -386,7 +459,7 @@ public class JiraService {
             if (isSuitJustCreated(suit)) {
                 createStoryWithSubTasksInJira(clientId, suit);
             } else if (isSuitChangedAfterLastSync(suit)) {
-                jiraStoryDAO.updateStoryByJiraKey(clientId, suit);
+                updateStoryInJira(clientId, suit);
             }
 
             for (Case caze : suit.getCases()) {

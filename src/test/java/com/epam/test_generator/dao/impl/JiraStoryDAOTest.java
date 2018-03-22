@@ -53,6 +53,7 @@ public class JiraStoryDAOTest {
     private static final String JIRA_KEY = "key";
     private static final String JIRA_FILTER = "filter";
     private static final Long JIRA_SETTINGS_ID = 1L;
+    private final static Integer CLOSE_ACTION_ID = 31;
 
     @Before
     public void setUp() throws Exception {
@@ -128,7 +129,7 @@ public class JiraStoryDAOTest {
     public void closeStoryByJiraKey() throws JiraException {
         when(client.getIssue(anyString())).thenReturn(issue);
         when(client.getIssue(anyString()).transition()).thenCallRealMethod();
-        jiraStroryDAO.closeStoryByJiraKey(JIRA_SETTINGS_ID, JIRA_KEY);
+        jiraStroryDAO.changeStatusByJiraKey(JIRA_SETTINGS_ID, JIRA_KEY, CLOSE_ACTION_ID);
     }
 
 }
