@@ -3,8 +3,11 @@ package com.epam.test_generator.dao.impl;
 import com.epam.test_generator.pojo.JiraFilter;
 import com.epam.test_generator.pojo.JiraProject;
 import com.epam.test_generator.services.exceptions.JiraRuntimeException;
+
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.epam.test_generator.transformers.parsers.JqlParser;
 import net.rcarz.jiraclient.JiraClient;
 import net.rcarz.jiraclient.JiraException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,9 @@ public class JiraProjectDAO {
     @Autowired
     private JiraFilterDAO jiraFilterDAO;
 
+    @Autowired
+    private JqlParser jqlParser;
+
     public JiraProject getProjectByJiraKey(String jiraKey) {
         final List<JiraFilter> filters = jiraFilterDAO.getFilters();
 
@@ -32,14 +38,18 @@ public class JiraProjectDAO {
     public List<JiraProject> getAllProjects() throws JiraException {
         final List<JiraFilter> allFilters = jiraFilterDAO.getFilters();
         return client.getProjects().stream()
-            .map(p -> new JiraProject(p, getProjectFilters(allFilters, p.getKey())))
-            .collect(Collectors.toList());
+                .map(p -> new JiraProject(p, getProjectFilters(allFilters, p.getKey())))
+                .collect(Collectors.toList());
+    }
+
+    private boolean filterIsAssignedToProject(JiraFilter filter, String jiraKey) {
+        return jqlParser.queryBelongsToProject(filter.getJql(), jiraKey);
     }
 
     private List<JiraFilter> getProjectFilters(List<JiraFilter> filters, String jiraKey) {
         return filters.stream()
-            .filter(f -> f.getJql().contains(jiraKey))
-            .collect(Collectors.toList());
+                .filter(f -> filterIsAssignedToProject(f, jiraKey))
+                .collect(Collectors.toList());
     }
 
 }
