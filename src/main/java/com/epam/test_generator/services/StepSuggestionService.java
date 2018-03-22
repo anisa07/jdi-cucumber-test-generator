@@ -75,9 +75,9 @@ public class StepSuggestionService {
 
     public List<StepSuggestionDTO> getStepsSuggestionsByType(StepType stepType) {
         return stepSuggestionTransformer.toDtoList(
-                stepSuggestionDAO.findAll().stream()
-                        .filter(s -> s.getType() == stepType)
-                        .collect(Collectors.toList()));
+            stepSuggestionDAO.findAll().stream()
+                .filter(s -> s.getType() == stepType)
+                .collect(Collectors.toList()));
     }
 
     /**

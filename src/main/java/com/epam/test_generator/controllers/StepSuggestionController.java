@@ -81,31 +81,31 @@ public class StepSuggestionController {
 
     @Deprecated
     @ApiOperation(value = "Get all step suggestions by type",
-        nickname = "getStepsSuggestionsByType")
+            nickname = "getStepsSuggestionsByType")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK",
-            response = StepSuggestionDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "OK",
+                    response = StepSuggestionDTO.class, responseContainer = "List")
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "stepType",
-            value = "Type of step suggestion that we want to return",
-            required = true, dataType = "StepType", paramType = "path"),
-        @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+            @ApiImplicitParam(name = "stepType",
+                    value = "Type of step suggestion that we want to return",
+                    required = true, dataType = "StepType", paramType = "path"),
+            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD", "ROLE_GUEST"})
     @RequestMapping(value = "/stepSuggestions/{stepType}",
-        method = RequestMethod.GET, produces = "application/json")
+            method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<List<StepSuggestionDTO>> getStepsSuggestionsByType(
-        @PathVariable("stepType") StepType stepType) {
+            @PathVariable("stepType") StepType stepType) {
 
         return new ResponseEntity<>(stepSuggestionService.getStepsSuggestionsByType(stepType),
-            HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     @ApiOperation(value = "Add a new step suggestion", nickname = "addStepSuggestion")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Created", response = Long.class),
-        @ApiResponse(code = 400, message = "Invalid input")
+            @ApiResponse(code = 201, message = "Created", response = Long.class),
+            @ApiResponse(code = 400, message = "Invalid input")
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "stepSuggestionCreateDTO", value = "Added step suggestion object",
@@ -115,7 +115,7 @@ public class StepSuggestionController {
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD"})
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/stepSuggestions", method = RequestMethod.POST,
-        consumes = "application/json", produces = "application/json")
+            consumes = "application/json", produces = "application/json")
     public ResponseEntity<Long> addStepSuggestion(
             @RequestBody @Valid StepSuggestionCreateDTO stepSuggestionCreateDTO) {
 
@@ -150,20 +150,20 @@ public class StepSuggestionController {
 
     @ApiOperation(value = "Delete step suggestion by id", nickname = "removeStepSuggestion")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK"),
-        @ApiResponse(code = 400, message = "Invalid input"),
-        @ApiResponse(code = 404, message = "StepSuggestion not found")
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 400, message = "Invalid input"),
+            @ApiResponse(code = 404, message = "StepSuggestion not found")
     })
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "stepSuggestionId", value = "ID of step suggestion to delete",
-            required = true, dataType = "long", paramType = "path"),
-        @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
+            @ApiImplicitParam(name = "stepSuggestionId", value = "ID of step suggestion to delete",
+                    required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header", dataType = "string", required = true)
     })
     @Secured({"ROLE_ADMIN", "ROLE_TEST_ENGINEER", "ROLE_TEST_LEAD"})
     @RequestMapping(value = "/stepSuggestions/{stepSuggestionId}",
-        method = RequestMethod.DELETE, produces = "application/json")
+            method = RequestMethod.DELETE, produces = "application/json")
     public ResponseEntity<Void> removeStepSuggestion(
-        @PathVariable("stepSuggestionId") long stepSuggestionId) {
+            @PathVariable("stepSuggestionId") long stepSuggestionId) {
         stepSuggestionService.removeStepSuggestion(stepSuggestionId);
 
         return new ResponseEntity<>(HttpStatus.OK);
