@@ -154,9 +154,10 @@ public class CaseService {
 
         final List<Long> failedStepIds = cascadeUpdateService
             .cascadeCaseStepsUpdate(projectId, suitId, caseId, editCaseDTO);
-
         caze.setUpdateDate(Calendar.getInstance().getTime());
-        caze.setTags(new HashSet<>(tagTransformer.fromDtoList(editCaseDTO.getTags())));
+        if (editCaseDTO.getTags() != null) {
+            caze.setTags(new HashSet<>(tagTransformer.fromDtoList(editCaseDTO.getTags())));
+        }
         caze.setDescription(editCaseDTO.getDescription());
         caze.setPriority(editCaseDTO.getPriority());
         caze.setStatus(editCaseDTO.getStatus());
