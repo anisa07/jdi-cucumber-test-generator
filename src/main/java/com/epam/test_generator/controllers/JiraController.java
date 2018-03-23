@@ -68,17 +68,17 @@ public class JiraController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Secured({"ROLE_ADMIN", "ROLE_TEST_LEAD"})
+    @Secured("ROLE_ADMIN")
     @ApiImplicitParam(name = "Authorization", value = "add here your token", paramType = "header",
             dataType = "string", required = true)
-    @RequestMapping(value = "/jiraSettingsId/projectByFilters", method = RequestMethod.POST,
+    @RequestMapping(value = "/{jiraSettingsId}/projectByFilters", method = RequestMethod.POST,
         consumes = "application/json")
     public ResponseEntity<ProjectDTO> createProjectByFilters(
-        @PathVariable("jiraSettingsId") Long clientId, @RequestBody() List<JiraFilter> jiraFilters,
+        @PathVariable("jiraSettingsId") Long id, @RequestBody() List<JiraFilter> jiraFilters,
         Authentication auth) {
 
         return new ResponseEntity<>
-            (jiraService.createProjectWithAttachedFilters(clientId, jiraFilters, auth),
+            (jiraService.createProjectWithAttachedFilters(id, jiraFilters, auth),
                 HttpStatus.OK);
     }
 
